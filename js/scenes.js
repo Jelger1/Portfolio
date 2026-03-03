@@ -443,8 +443,20 @@ function initSparkles() {
 
 /* ---------- INIT ALL ---------- */
 document.addEventListener('DOMContentLoaded', () => {
-  initHeroScene();
-  initDienstenScene();
-  initPrintScene();
+  // Always init sparkles (uses 2D canvas, no Three.js needed)
   initSparkles();
+
+  // Only init Three.js scenes if the library loaded successfully
+  if (typeof THREE !== 'undefined') {
+    try {
+      initHeroScene();
+      initDienstenScene();
+      // Print scene replaced by iframe preview
+      if (document.getElementById('print-canvas')) initPrintScene();
+    } catch (e) {
+      console.warn('Three.js scene init failed:', e);
+    }
+  } else {
+    console.warn('Three.js not loaded — 3D scenes disabled');
+  }
 });
