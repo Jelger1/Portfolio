@@ -874,15 +874,13 @@ button {
   font-size: 0.72rem;
 }
 
-/* Three.js Print Canvas */
-.print-canvas {
-  aspect-ratio: 1;
-  border-radius: var(--radius);
-  background: rgba(30, 33, 40, 0.3);
-  border: 1px solid var(--border);
-  overflow: hidden;
+/* Print section browser preview */
+.print-card__visual {
   position: relative;
-  min-height: 300px;
+}
+
+.print-card__visual .project__browser-body {
+  aspect-ratio: 4 / 3;
 }
 
 /* ---------- PROJECT SECTIONS ---------- */
@@ -963,16 +961,30 @@ button {
   text-decoration: none;
 }
 
+/* Scaled iframe preview */
 .project__iframe {
   width: 300%;
   height: 300%;
   border: none;
   transform: scale(0.3334);
   transform-origin: top left;
-  pointer-events: none;
   position: absolute;
   top: 0;
   left: 0;
+  /* Edge compatibility */
+  -ms-overflow-style: none;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Transparent overlay to capture clicks & block iframe interaction */
+.project__iframe-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  cursor: pointer;
+  background: transparent;
 }
 
 .project__placeholder {
@@ -1336,8 +1348,8 @@ button {
     gap: 1.5rem;
   }
 
-  .print-canvas {
-    min-height: 280px;
+  .print-card__visual .project__browser-body {
+    aspect-ratio: 16 / 9;
   }
 
   /* Projects */

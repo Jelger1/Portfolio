@@ -291,7 +291,8 @@
             </div>
             <div class="project__browser-url">brouwerij-rolduc.nl</div>
             <a href="https://www.brouwerij-rolduc.nl" class="project__browser-body" target="_blank" rel="noopener noreferrer">
-              <iframe src="https://www.brouwerij-rolduc.nl" class="project__iframe" loading="lazy" title="Brouwerij Rolduc website" sandbox="allow-scripts allow-same-origin"></iframe>
+              <iframe src="https://www.brouwerij-rolduc.nl" class="project__iframe" title="Brouwerij Rolduc website" aria-hidden="true"></iframe>
+              <div class="project__iframe-overlay"></div>
             </a>
           </div>
         </div>
@@ -324,7 +325,8 @@
             </div>
             <div class="project__browser-url">Interactieve Story</div>
             <a href="https://mia-mms-2526.github.io/team03/" class="project__browser-body" target="_blank" rel="noopener noreferrer">
-              <iframe src="https://mia-mms-2526.github.io/team03/" class="project__iframe" loading="lazy" title="Heerlen Steenkool website" sandbox="allow-scripts allow-same-origin"></iframe>
+              <iframe src="https://mia-mms-2526.github.io/team03/" class="project__iframe" title="Heerlen Steenkool website" aria-hidden="true"></iframe>
+              <div class="project__iframe-overlay"></div>
             </a>
           </div>
         </div>
@@ -357,7 +359,8 @@
             </div>
             <div class="project__browser-url">CodeMonster Platform</div>
             <a href="https://mia-dp-2425.github.io/team01/index.html" class="project__browser-body" target="_blank" rel="noopener noreferrer">
-              <iframe src="https://mia-dp-2425.github.io/team01/index.html" class="project__iframe" loading="lazy" title="CodeMonster website" sandbox="allow-scripts allow-same-origin"></iframe>
+              <iframe src="https://mia-dp-2425.github.io/team01/index.html" class="project__iframe" title="CodeMonster website" aria-hidden="true"></iframe>
+              <div class="project__iframe-overlay"></div>
             </a>
           </div>
         </div>
@@ -435,8 +438,19 @@
             </div>
           </div>
 
-          <!-- Three.js Print Scene -->
-          <div id="print-canvas" class="print-canvas" aria-hidden="true"></div>
+          <!-- JelgerS3D website preview -->
+          <div class="print-card__visual">
+            <div class="project__browser">
+              <div class="project__browser-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+              <div class="project__browser-url">jelgers3d.nl</div>
+              <a href="https://jelgers3d.nl/" class="project__browser-body" target="_blank" rel="noopener noreferrer">
+                <iframe src="https://jelgers3d.nl/" class="project__iframe" title="JelgerS3D website" aria-hidden="true"></iframe>
+                <div class="project__iframe-overlay"></div>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -524,7 +538,7 @@
   </main>
 
   <!-- Scripts -->
-  <script src="js/main.js"></script>
+  <script src="js/main.js" defer></script>
   <script src="js/scenes.js" defer></script>
 </body>
 </html>
