@@ -84,24 +84,69 @@ function initNavbarScroll() {
   }, { passive: true });
 }
 
-/* ---------- CONTACT FORM ---------- */
+/* ---------- CONTACT FORM (Web3Forms) ---------- */
 function initContactForm() {
   const form = document.getElementById('contact-form');
+  const feedback = document.getElementById('form-feedback');
+  const submitBtn = document.getElementById('submit-btn');
   if (!form) return;
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const formData = new FormData(form);
-    const name = formData.get('name');
-    const email = formData.get('email');
-    const message = formData.get('message');
+    // Basic client-side validation
+    const name = form.name.value.trim();
+    const email = form.email.value.trim();
+    const message = form.message.value.trim();
 
-    // Build mailto link with form data
-    const subject = encodeURIComponent(`Portfolio contact van ${name}`);
-    const body = encodeURIComponent(`Naam: ${name}\nEmail: ${email}\n\n${message}`);
-    window.location.href = `mailto:hello@jelger.nl?subject=${subject}&body=${body}`;
+    if (!name || !email || !message) {
+      showFeedback('Vul alle velden in.', 'error');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showFeedback('Vul een geldig e-mailadres in.', 'error');
+      return;
+    }
+
+    // Disable button while sending
+    submitBtn.disabled = true;
+    submitBtn.querySelector('span').textContent = 'Versturen...';
+
+    try {
+      const formData = new FormData(form);
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showFeedback('Bericht verstuurd! Ik neem zo snel mogelijk contact op.', 'success');
+        form.reset();
+      } else {
+        showFeedback('Er ging iets mis. Probeer het opnieuw of mail direct.', 'error');
+      }
+    } catch (err) {
+      showFeedback('Netwerkfout. Controleer je internetverbinding en probeer opnieuw.', 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.querySelector('span').textContent = 'Verstuur bericht';
+    }
   });
+
+  function showFeedback(msg, type) {
+    if (!feedback) return;
+    feedback.textContent = msg;
+    feedback.hidden = false;
+    feedback.className = `form-feedback form-feedback--${type}`;
+
+    // Auto-hide success after 6s
+    if (type === 'success') {
+      setTimeout(() => { feedback.hidden = true; }, 6000);
+    }
+  }
 }
 
 /* ---------- FOOTER YEAR ---------- */
@@ -112,7 +157,7 @@ function setFooterYear() {
   }
 }
 
-/* ---------- SMOOTH SCROLL for anchor links ---------- */
+/* ---------- SMOOTH SCROLL for anchor links (snap-compatible) ---------- */
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function (e) {
     const targetId = this.getAttribute('href');
@@ -121,13 +166,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     const target = document.querySelector(targetId);
     if (target) {
       e.preventDefault();
-      const navHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-height')) || 64;
-      const targetPosition = target.getBoundingClientRect().top + window.scrollY - navHeight;
-
-      window.scrollTo({
-        top: targetPosition,
-        behavior: 'smooth'
-      });
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   });
 });

@@ -39,6 +39,7 @@
 }
 
 html {
+  scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
 }
@@ -92,13 +93,40 @@ button {
   border-radius: 4px;
 }
 
+/* ---------- FULL-PAGE SECTION SYSTEM ---------- */
+.section--fullpage {
+  min-height: 100vh;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  padding: calc(var(--nav-height) + 2rem) 0 2rem;
+  overflow: hidden;
+}
+
+/* Subtle separator between sections */
+.section--fullpage + .section--fullpage::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--primary-glow-strong), transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+
 /* ---------- UTILITY CLASSES ---------- */
 .container {
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: clamp(1rem, 3vw, 2rem);
+  padding-right: clamp(1rem, 3vw, 2rem);
 }
 
 .text-gradient {
@@ -253,7 +281,7 @@ button {
 
 /* Mobile menu */
 .navbar__mobile {
-  display: none;
+  display: flex;
   position: fixed;
   top: var(--nav-height);
   left: 0;
@@ -266,12 +294,17 @@ button {
   z-index: 99;
   transform: translateY(-100%);
   opacity: 0;
-  transition: transform 0.35s ease, opacity 0.35s ease;
+  pointer-events: none;
+  visibility: hidden;
+  transition: transform 0.35s ease, opacity 0.35s ease, visibility 0s 0.35s;
 }
 
 .navbar__mobile.open {
   transform: translateY(0);
   opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition: transform 0.35s ease, opacity 0.35s ease, visibility 0s 0s;
 }
 
 .navbar__mobile a {
@@ -288,14 +321,7 @@ button {
 
 /* ---------- HERO SECTION ---------- */
 .hero {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-top: calc(var(--nav-height) + 2rem);
-  padding-bottom: 5rem;
-  overflow: hidden;
+  padding-bottom: 3.5rem; /* Space for the marquee bar */
 }
 
 /* Animated background orbs */
@@ -395,7 +421,7 @@ button {
 .hero__description {
   max-width: 520px;
   color: var(--fg-muted);
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 0.5vw + 0.8rem, 1.15rem);
   line-height: 1.7;
   margin-bottom: 2.5rem;
 }
@@ -513,8 +539,7 @@ button {
 
 /* ---------- DIENSTEN SECTION ---------- */
 .diensten {
-  position: relative;
-  padding: 5rem 0;
+  /* Inherits full-page layout from .section--fullpage */
 }
 
 /* Three.js Diensten Canvas */
@@ -554,7 +579,7 @@ button {
 .section-desc {
   max-width: 580px;
   color: var(--fg-muted);
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 0.3vw + 0.75rem, 1rem);
   line-height: 1.7;
 }
 
@@ -636,7 +661,7 @@ button {
 
 /* ---------- OVER MIJ SECTION ---------- */
 .over-mij {
-  padding: 5rem 0;
+  /* Inherits full-page layout from .section--fullpage */
 }
 
 .over-mij__grid {
@@ -775,7 +800,7 @@ button {
 
 /* ---------- 3D PRINT SECTION ---------- */
 .print-section {
-  padding: 5rem 0;
+  /* Inherits full-page layout from .section--fullpage */
 }
 
 .print-card {
@@ -861,8 +886,8 @@ button {
 
 /* ---------- CONTACT SECTION ---------- */
 .contact {
-  padding: 5rem 0;
   text-align: center;
+  padding-bottom: 5rem; /* Space for footer */
 }
 
 .contact__inner {
@@ -874,7 +899,7 @@ button {
 
 .contact__desc {
   color: var(--fg-muted);
-  font-size: 1.05rem;
+  font-size: clamp(0.9rem, 0.5vw + 0.7rem, 1.1rem);
   line-height: 1.7;
   margin-bottom: 2.5rem;
 }
@@ -935,6 +960,45 @@ button {
   margin-top: 0.5rem;
 }
 
+.contact-form .btn--primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Form feedback messages */
+.form-feedback {
+  text-align: center;
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  animation: feedbackSlide 0.3s ease;
+}
+
+.form-feedback--success {
+  background: rgba(46, 204, 113, 0.12);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  color: #2ecc71;
+}
+
+.form-feedback--error {
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  color: #e74c3c;
+}
+
+@keyframes feedbackSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .contact__or {
   color: var(--fg-muted);
   font-size: 0.85rem;
@@ -992,7 +1056,11 @@ button {
 .footer {
   border-top: 1px solid var(--border);
   padding: 1.5rem 0;
-  position: relative;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
 }
 
 .footer__gradient-line {
@@ -1043,11 +1111,6 @@ button {
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 1024px) {
-  .container {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-
   .diensten__grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1070,9 +1133,15 @@ button {
     --nav-height: 56px;
   }
 
-  .container {
-    padding-left: 1rem;
-    padding-right: 1rem;
+  /* Allow internal scrolling on mobile when content overflows */
+  html {
+    scroll-snap-type: y proximity;
+  }
+
+  .section--fullpage {
+    min-height: 100vh;
+    height: auto;
+    padding: calc(var(--nav-height) + 1.5rem) 0 1.5rem;
   }
 
   /* Navbar mobile */
@@ -1084,17 +1153,9 @@ button {
     display: flex;
   }
 
-  .navbar__mobile {
-    display: flex;
-  }
-
   /* Hero */
   .hero {
-    padding-top: calc(var(--nav-height) + 3rem);
-  }
-
-  .hero__description {
-    font-size: 1rem;
+    padding-bottom: 3rem;
   }
 
   .hero__scroll {
@@ -1104,10 +1165,6 @@ button {
   }
 
   /* Diensten */
-  .diensten {
-    padding: 3.5rem 0;
-  }
-
   .diensten__grid {
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -1129,10 +1186,6 @@ button {
   }
 
   /* Over mij */
-  .over-mij {
-    padding: 3.5rem 0;
-  }
-
   .over-mij__grid {
     grid-template-columns: 1fr;
     gap: 2rem;
@@ -1143,10 +1196,6 @@ button {
   }
 
   /* Print */
-  .print-section {
-    padding: 3.5rem 0;
-  }
-
   .print-card {
     padding: 1.5rem;
   }
@@ -1162,7 +1211,7 @@ button {
 
   /* Contact */
   .contact {
-    padding: 3.5rem 0;
+    padding-bottom: 4.5rem;
   }
 
   .form-row {
@@ -1188,5 +1237,16 @@ button {
 
   .print-card__features {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 2560px) {
+  .container {
+    max-width: 1400px;
+  }
+
+  .section--fullpage {
+    padding: calc(var(--nav-height) + 3rem) 0 3rem;
   }
 }
