@@ -521,7 +521,7 @@ button {
   display: flex;
   gap: 3rem;
   white-space: nowrap;
-  animation: marquee 25s linear infinite;
+  animation: marquee 5s linear infinite;
   color: rgba(124, 131, 143, 0.3);
   font-family: var(--font-display);
   font-size: 0.8rem;
@@ -957,11 +957,10 @@ button {
   background: linear-gradient(135deg, var(--bg-secondary), var(--bg-card));
   position: relative;
   overflow: hidden;
-  cursor: pointer;
   text-decoration: none;
 }
 
-/* Scaled iframe preview */
+/* Scaled iframe preview — interactive */
 .project__iframe {
   width: 300%;
   height: 300%;
@@ -971,6 +970,8 @@ button {
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 3;
+  pointer-events: auto;
   /* Edge compatibility */
   -ms-overflow-style: none;
   will-change: transform;
@@ -978,13 +979,9 @@ button {
   -webkit-backface-visibility: hidden;
 }
 
-/* Transparent overlay to capture clicks & block iframe interaction */
+/* Overlay hidden — iframe is interactive */
 .project__iframe-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  cursor: pointer;
-  background: transparent;
+  display: none;
 }
 
 .project__placeholder {
