@@ -533,8 +533,53 @@
 
   </main>
 
+  <!-- ========== JELLY-BOT CHATBOT ========== -->
+  <div id="jellybot" class="jellybot" aria-label="Jelly-bot chatassistent">
+    <!-- Toggle button -->
+    <button class="jellybot__toggle" id="jellybot-toggle" aria-label="Open chat" aria-expanded="false" aria-controls="jellybot-window">
+      <svg class="jellybot__icon-chat" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <svg class="jellybot__icon-close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+
+    <!-- Chat window -->
+    <div class="jellybot__window" id="jellybot-window" role="dialog" aria-label="Chat met Jelly-bot" hidden>
+      <div class="jellybot__header">
+        <div class="jellybot__header-info">
+          <div class="jellybot__avatar">🤖</div>
+          <div>
+            <p class="jellybot__name">Jelly-bot</p>
+            <p class="jellybot__status">Online — vraag me alles!</p>
+          </div>
+        </div>
+        <button class="jellybot__close" id="jellybot-close" aria-label="Sluit chat">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="jellybot__messages" id="jellybot-messages">
+        <div class="jellybot__msg jellybot__msg--bot">
+          <p>Hoi! 👋 Ik ben <strong>Jelly-bot</strong>, Jelger's digitale assistent. Stel me gerust een vraag over zijn werk, 3D prints, diensten of proces!</p>
+        </div>
+      </div>
+
+      <div class="jellybot__suggestions" id="jellybot-suggestions">
+        <button class="jellybot__suggestion" data-msg="Wat voor diensten bied je aan?">💼 Diensten</button>
+        <button class="jellybot__suggestion" data-msg="Kan je me meer vertellen over 3D printing?">🖨️ 3D Prints</button>
+        <button class="jellybot__suggestion" data-msg="Hoe kan ik contact opnemen?">📬 Contact</button>
+      </div>
+
+      <form class="jellybot__input" id="jellybot-form">
+        <input type="text" id="jellybot-input" placeholder="Typ je vraag..." autocomplete="off" required>
+        <button type="submit" aria-label="Verstuur bericht">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="js/main.js" defer></script>
   <script src="js/scenes.js" defer></script>
+  <script src="js/chatbot.js" defer></script>
 </body>
 </html>
