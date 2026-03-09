@@ -984,9 +984,14 @@ button {
   backface-visibility: hidden;
 }
 
-/* Overlay hidden — iframe is interactive */
+/* Overlay — hidden on desktop, visible on mobile */
 .project__iframe-overlay {
   display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  cursor: pointer;
+  background: transparent;
 }
 
 .project__placeholder {
@@ -1376,6 +1381,34 @@ button {
     aspect-ratio: 16 / 9;
   }
 
+  /* Disable iframe interaction on mobile — prevents scroll trapping */
+  .project__iframe {
+    pointer-events: none;
+  }
+
+  .project__iframe-overlay {
+    display: block;
+  }
+
+  /* Skills grid single column on small screens */
+  .skills-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .skill-item {
+    font-size: 0.8rem;
+  }
+
+  /* Stat cards: more compact on mobile */
+  .stat-card__value {
+    font-size: 1.4rem;
+  }
+
+  .stat-card__sub {
+    font-size: 0.72rem;
+  }
+
   /* Contact */
   .contact {
     padding-bottom: 0;
@@ -1404,6 +1437,18 @@ button {
 
   .print-card__features {
     grid-template-columns: 1fr;
+  }
+
+  .skills-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .over-mij__stats {
+    padding: 1rem;
+  }
+
+  .over-mij__bars {
+    padding: 0 1rem 1rem;
   }
 }
 
