@@ -15,11 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!toggle || !window_ || !form) return;
 
-  // API base URL: use current origin when served by the Express server,
-  // otherwise fall back to localhost:3000
-  const API_BASE = (location.protocol === 'file:')
-    ? 'http://localhost:3000'
-    : '';
+  // Always point to the Express proxy server on port 3000
+  const API_BASE = (location.port === '3000' && location.protocol !== 'file:')
+    ? ''
+    : 'http://localhost:3000';
 
   // Conversation history for context
   const messages = [];
@@ -130,6 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
       removeTyping();
 
       if (!res.ok) {
+        const errorData = await res.text();
+        console.error('Jelly-bot API error:', res.status, errorData);
         addMessage('assistant', 'Oeps, er ging iets mis. Probeer het later opnieuw of neem direct contact op via het contactformulier! 😅');
         return;
       }
@@ -141,7 +142,8 @@ document.addEventListener('DOMContentLoaded', () => {
       addMessage('assistant', reply);
     } catch (err) {
       removeTyping();
-      addMessage('assistant', 'Hmm, ik kan even geen verbinding maken. Probeer het later opnieuw! 🔌');
+      console.error('Jelly-bot connection error:', err);
+      addMessage('assistant', 'Hmm, ik kan even geen verbinding maken. Zorg dat de server draait op localhost:3000! 🔌');
     }
   }
 });
