@@ -42,6 +42,7 @@ html {
   scroll-snap-type: y mandatory;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   overflow-x: hidden;
 }
 
@@ -225,8 +226,8 @@ button {
   z-index: 100;
   height: var(--nav-height);
   background: rgba(18, 21, 28, 0.8);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -278,6 +279,10 @@ button {
 .navbar__hamburger svg {
   width: 22px;
   height: 22px;
+}
+
+#icon-close {
+  display: none;
 }
 
 /* Mobile menu */
@@ -539,9 +544,7 @@ button {
 }
 
 /* ---------- DIENSTEN SECTION ---------- */
-.diensten {
-  /* Inherits full-page layout from .section--fullpage */
-}
+/* .diensten inherits full-page layout from .section--fullpage */
 
 /* Three.js Diensten Canvas */
 .diensten__canvas {
@@ -661,9 +664,7 @@ button {
 }
 
 /* ---------- OVER MIJ SECTION ---------- */
-.over-mij {
-  /* Inherits full-page layout from .section--fullpage */
-}
+/* .over-mij inherits full-page layout from .section--fullpage */
 
 .over-mij__grid {
   display: grid;
@@ -703,8 +704,8 @@ button {
 
 .stat-card {
   background: rgba(26, 29, 36, 0.85);
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.25rem;
@@ -800,9 +801,7 @@ button {
 }
 
 /* ---------- 3D PRINT SECTION ---------- */
-.print-section {
-  /* Inherits full-page layout from .section--fullpage */
-}
+/* .print-section inherits full-page layout from .section--fullpage */
 
 .print-card {
   position: relative;
@@ -832,6 +831,14 @@ button {
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
   align-items: center;
+}
+
+.print-card .section-desc {
+  margin-bottom: 1.5rem;
+}
+
+.print-card .btn--primary {
+  margin-bottom: 1.5rem;
 }
 
 .print-card__features {
@@ -884,9 +891,7 @@ button {
 }
 
 /* ---------- PROJECT SECTIONS ---------- */
-.project-section {
-  /* Inherits full-page layout from .section--fullpage */
-}
+/* .project-section inherits full-page layout from .section--fullpage */
 
 .project__grid {
   display: grid;
@@ -975,8 +980,8 @@ button {
   /* Edge compatibility */
   -ms-overflow-style: none;
   will-change: transform;
-  backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* Overlay hidden — iframe is interactive */
@@ -1043,6 +1048,10 @@ button {
   font-size: clamp(0.9rem, 0.5vw + 0.7rem, 1.1rem);
   line-height: 1.7;
   margin-bottom: 2.5rem;
+}
+
+.hidden {
+  display: none;
 }
 
 /* Contact form */
@@ -1433,6 +1442,10 @@ button {
 .jellybot__toggle:hover {
   transform: scale(1.08);
   box-shadow: 0 6px 30px rgba(3, 188, 202, 0.5), 0 0 50px rgba(3, 188, 202, 0.2);
+}
+
+.jellybot__icon-close {
+  display: none;
 }
 
 /* Pulse animation when closed */

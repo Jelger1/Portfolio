@@ -15,10 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!toggle || !window_ || !form) return;
 
-  // Always point to the Express proxy server on port 3000
-  const API_BASE = (location.port === '3000' && location.protocol !== 'file:')
-    ? ''
-    : 'http://localhost:3000';
+  // API server URL — deployed server for production, localhost for local dev
+  const API_BASE = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+    ? 'http://localhost:3000'
+    : 'https://jellybot-backend.onrender.com';
 
   // Conversation history for context
   const messages = [];
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       removeTyping();
       console.error('Jelly-bot connection error:', err);
-      addMessage('assistant', 'Hmm, ik kan even geen verbinding maken. Zorg dat de server draait op localhost:3000! 🔌');
+      addMessage('assistant', 'Hmm, ik kan even geen verbinding maken. Probeer het later opnieuw! 🔌');
     }
   }
 });
