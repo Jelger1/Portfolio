@@ -93,6 +93,40 @@ function initHeroScene() {
   const sparkles = new THREE.Points(sparkleGeo, sparkleMat);
   scene.add(sparkles);
 
+  // --- Mouse interaction ---
+  const mouse = { x: 0, y: 0 };
+  const smoothMouse = { x: 0, y: 0 };
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  const interactiveObjects = [torus, sphere, ico];
+  let hoveredObject = null;
+
+  // Store original scales & emissive intensities
+  const originalScales = new Map();
+  const originalEmissive = new Map();
+  interactiveObjects.forEach(obj => {
+    originalScales.set(obj, obj.scale.clone());
+    originalEmissive.set(obj, obj.material.emissiveIntensity || 0);
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    const rect = container.getBoundingClientRect();
+    // Check if mouse is within the container bounds
+    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const ny = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    if (nx >= -1 && nx <= 1 && ny >= -1 && ny <= 1) {
+      mouse.x = nx;
+      mouse.y = ny;
+      pointer.x = nx;
+      pointer.y = ny;
+    } else {
+      mouse.x = 0;
+      mouse.y = 0;
+      pointer.x = 999;
+      pointer.y = 999;
+    }
+  });
+
   // Animation
   const clock = new THREE.Clock();
 
@@ -100,18 +134,59 @@ function initHeroScene() {
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
-    // Torus animation
-    torus.rotation.x = Math.sin(t * 0.24) * 0.4;
+    // Smooth mouse follow (lerp)
+    smoothMouse.x += (mouse.x - smoothMouse.x) * 0.05;
+    smoothMouse.y += (mouse.y - smoothMouse.y) * 0.05;
+
+    // Raycasting for hover
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(interactiveObjects);
+    const newHover = intersects.length > 0 ? intersects[0].object : null;
+
+    if (newHover !== hoveredObject) {
+      hoveredObject = newHover;
+      container.style.cursor = hoveredObject ? 'pointer' : 'default';
+    }
+
+    // Apply hover glow + scale
+    interactiveObjects.forEach(obj => {
+      const origScale = originalScales.get(obj);
+      const origEmissive = originalEmissive.get(obj);
+      const isHovered = obj === hoveredObject;
+      const targetScale = isHovered ? 1.2 : 1.0;
+      const targetEmissive = isHovered ? origEmissive + 0.6 : origEmissive;
+
+      // Lerp scale
+      obj.scale.x += (origScale.x * targetScale - obj.scale.x) * 0.1;
+      obj.scale.y += (origScale.y * targetScale - obj.scale.y) * 0.1;
+      obj.scale.z += (origScale.z * targetScale - obj.scale.z) * 0.1;
+
+      // Lerp emissive
+      obj.material.emissiveIntensity += (targetEmissive - obj.material.emissiveIntensity) * 0.1;
+    });
+
+    // Mouse parallax offset for objects
+    const parallaxX = smoothMouse.x * 0.4;
+    const parallaxY = smoothMouse.y * 0.3;
+
+    // Torus animation + parallax
+    torus.rotation.x = Math.sin(t * 0.24) * 0.4 + parallaxY * 0.2;
     torus.rotation.y += 0.004;
     torus.position.y = 1 + Math.sin(t * 0.8) * 0.3;
+    torus.position.x = 3.5 + parallaxX * 0.5;
+    torus.position.z = -2 + parallaxY * 0.3;
 
-    // Sphere float
+    // Sphere float + parallax
     sphere.position.y = -1.5 + Math.sin(t * 0.5) * 0.3;
+    sphere.position.x = 4 + parallaxX * 0.3;
+    sphere.position.z = 0 + parallaxY * 0.2;
 
-    // Ico rotation
+    // Ico rotation + parallax
     ico.rotation.x += 0.003;
     ico.rotation.z += 0.005;
     ico.position.y = -0.5 + Math.sin(t * 1.2) * 0.2;
+    ico.position.x = 2.5 + parallaxX * 0.6;
+    ico.position.z = 1 + parallaxY * 0.4;
 
     // Sparkles gentle movement
     sparkles.rotation.y = t * 0.02;
@@ -167,15 +242,43 @@ function initDienstenScene() {
         opacity: 0.4 + Math.random() * 0.3,
         roughness: 0.3,
         metalness: 0.7,
+        emissive: 0x03bcca,
+        emissiveIntensity: 0,
       });
       const cube = new THREE.Mesh(geo, mat);
       cube.position.set(x, 0, z);
+      cube._baseX = x;
+      cube._baseZ = z;
       cube._delay = (Math.abs(x) + Math.abs(z)) * 0.5;
+      cube._baseOpacity = mat.opacity;
       cubes.push(cube);
       group.add(cube);
     }
   }
   scene.add(group);
+
+  // --- Mouse interaction ---
+  const dRaycaster = new THREE.Raycaster();
+  const dPointer = new THREE.Vector2();
+  const dPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const dIntersectPoint = new THREE.Vector3();
+  let dMouseWorld = new THREE.Vector3(999, 0, 999); // start far away
+
+  window.addEventListener('mousemove', (e) => {
+    const rect = container.getBoundingClientRect();
+    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const ny = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    if (nx >= -1.5 && nx <= 1.5 && ny >= -1.5 && ny <= 1.5) {
+      dPointer.set(Math.max(-1, Math.min(1, nx)), Math.max(-1, Math.min(1, ny)));
+      dRaycaster.setFromCamera(dPointer, camera);
+      if (dRaycaster.ray.intersectPlane(dPlane, dIntersectPoint)) {
+        dMouseWorld = dIntersectPoint.clone();
+      }
+    } else {
+      dMouseWorld = new THREE.Vector3(999, 0, 999);
+    }
+  });
 
   // Sparkle particles
   const spCount = 20;
@@ -203,8 +306,27 @@ function initDienstenScene() {
     const t = clock.getElapsedTime();
 
     cubes.forEach(cube => {
-      cube.scale.y = 0.3 + Math.sin(t * 0.7 + cube._delay) * 0.2;
+      // World position of cube base (accounting for group rotation)
+      const worldPos = new THREE.Vector3(cube._baseX, 0, cube._baseZ);
+      worldPos.applyMatrix4(group.matrixWorld);
+
+      // Distance from mouse to cube in xz plane
+      const dx = worldPos.x - dMouseWorld.x;
+      const dz = worldPos.z - dMouseWorld.z;
+      const dist = Math.sqrt(dx * dx + dz * dz);
+
+      // Proximity effect: cubes within radius rise up and glow
+      const radius = 2.5;
+      const influence = Math.max(0, 1 - dist / radius);
+      const easedInfluence = influence * influence; // ease-in-out
+
+      const baseScale = 0.3 + Math.sin(t * 0.7 + cube._delay) * 0.2;
+      cube.scale.y = baseScale + easedInfluence * 1.2;
       cube.position.y = cube.scale.y / 2;
+
+      // Glow & opacity on proximity
+      cube.material.emissiveIntensity += (easedInfluence * 0.5 - cube.material.emissiveIntensity) * 0.15;
+      cube.material.opacity += ((cube._baseOpacity + easedInfluence * 0.4) - cube.material.opacity) * 0.15;
     });
 
     renderer.render(scene, camera);
@@ -313,25 +435,44 @@ function initPrintScene() {
   let prevX = 0;
   let rotationY = 0;
 
-  container.addEventListener('pointerdown', (e) => {
-    isDragging = true;
-    prevX = e.clientX;
-    container.style.cursor = 'grabbing';
+  // Mouse hover - raycasting
+  const pRaycaster = new THREE.Raycaster();
+  const pPointer = new THREE.Vector2();
+  let pHoveredDodec = false;
+  let dodecTargetScale = 0.7;
+  let dodecCurrentGlow = 0;
+
+  window.addEventListener('pointerdown', (e) => {
+    const rect = container.getBoundingClientRect();
+    if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+      isDragging = true;
+      prevX = e.clientX;
+    }
   });
 
   window.addEventListener('pointermove', (e) => {
-    if (!isDragging) return;
-    const dx = e.clientX - prevX;
-    rotationY += dx * 0.005;
-    prevX = e.clientX;
+    const rect = container.getBoundingClientRect();
+    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const ny = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    if (nx >= -1 && nx <= 1 && ny >= -1 && ny <= 1) {
+      pPointer.x = nx;
+      pPointer.y = ny;
+    } else {
+      pPointer.x = 999;
+      pPointer.y = 999;
+    }
+
+    if (isDragging) {
+      const dx = e.clientX - prevX;
+      rotationY += dx * 0.005;
+      prevX = e.clientX;
+    }
   });
 
   window.addEventListener('pointerup', () => {
     isDragging = false;
-    container.style.cursor = 'grab';
   });
-
-  container.style.cursor = 'grab';
 
   function animate() {
     requestAnimationFrame(animate);
@@ -343,7 +484,30 @@ function initPrintScene() {
     }
     mainGroup.rotation.y = rotationY;
 
-    // Layer animation
+    // Raycasting for dodecahedron hover
+    pRaycaster.setFromCamera(pPointer, camera);
+    const pIntersects = pRaycaster.intersectObject(dodec, true);
+    pHoveredDodec = pIntersects.length > 0;
+
+    dodecTargetScale = pHoveredDodec ? 0.85 : 0.7;
+    const targetGlow = pHoveredDodec ? 0.5 : 0;
+
+    // Smooth scale
+    const currentScale = dodec.scale.x;
+    const newScale = currentScale + (dodecTargetScale - currentScale) * 0.08;
+    dodec.scale.setScalar(newScale);
+
+    // Smooth glow
+    dodecCurrentGlow += (targetGlow - dodecCurrentGlow) * 0.1;
+    dodecMat.emissive = new THREE.Color(0x03bcca);
+    dodecMat.emissiveIntensity = dodecCurrentGlow;
+
+    // Cursor
+    if (!isDragging) {
+      container.style.cursor = pHoveredDodec ? 'pointer' : 'grab';
+    }
+
+    // Layer animation — mouse proximity effect
     layers.forEach(layer => {
       layer.position.y = layer._baseY + Math.sin(t * 0.8 + layer._delay) * 0.08;
       layer.scale.setScalar(layer._scale + Math.sin(t * 0.5 + layer._delay) * 0.02);
@@ -351,8 +515,8 @@ function initPrintScene() {
 
     // Dodecahedron float
     dodec.position.y = 0.5 + Math.sin(t * 0.7) * 0.15;
-    dodec.rotation.x += 0.005;
-    dodec.rotation.z += 0.003;
+    dodec.rotation.x += pHoveredDodec ? 0.015 : 0.005;
+    dodec.rotation.z += pHoveredDodec ? 0.01 : 0.003;
 
     renderer.render(scene, camera);
   }
