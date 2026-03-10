@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Jelger Sieler — Digital Craftsman. CMD-designer, developer en 3D-maker. Van complexe webshops tot tastbare 3D-iconen: ik breng ideeën tot leven in pixels, code en materiaal.">
+  <meta name="author" content="Jelger Sieler">
+  <meta name="keywords" content="Jelger Sieler, Digital Craftsman, CMD, Design, Development, 3D Printing, JelgerS3D, Portfolio, Maker">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Jelger Sieler — Digital Craftsman">
+  <meta property="og:description" content="CMD-designer, developer en 3D-maker. Ik breng ideeën tot leven in pixels, code en materiaal.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="nl_NL">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Jelger Sieler — Digital Craftsman">
+  <meta name="twitter:description" content="CMD-designer, developer en 3D-maker. Ik breng ideeën tot leven in pixels, code en materiaal.">
+
+  <title>Jelger Sieler — Digital Craftsman</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text x='4' y='26' font-size='28' font-family='sans-serif' font-weight='bold' fill='%23e8461e'>J</text></svg>">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" defer></script>
+</head>
+<body>
+
+  <!-- Full-page floating sparkles -->
+  <canvas id="sparkles-canvas" aria-hidden="true"></canvas>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar" role="navigation" aria-label="Hoofdnavigatie">
+    <div class="container">
+      <a href="#" class="navbar__logo" aria-label="Jelger Sieler — Home">JS<span>.</span></a>
+
+      <div class="navbar__links">
+        <a href="#over">Over mij</a>
+        <a href="#projecten">Projecten</a>
+        <a href="#jelgers3d">JelgerS3D</a>
+        <a href="#contact">Contact</a>
+      </div>
+
+      <button class="navbar__hamburger" id="hamburger" aria-label="Menu openen" aria-expanded="false" aria-controls="mobile-menu">
+        <svg id="icon-menu" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <svg id="icon-close" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="navbar__mobile" id="mobile-menu" role="menu">
+      <a href="#over" role="menuitem">Over mij</a>
+      <a href="#projecten" role="menuitem">Projecten</a>
+      <a href="#jelgers3d" role="menuitem">JelgerS3D</a>
+      <a href="#contact" role="menuitem">Contact</a>
+    </div>
+  </nav>
+
+  <main>
+
+  <!-- ========== HERO ========== -->
+  <section class="section--fullpage hero" aria-label="Hero">
+    <!-- Animated background -->
+    <div class="hero__bg" aria-hidden="true">
+      <div class="hero__orb hero__orb--1"></div>
+      <div class="hero__orb hero__orb--2"></div>
+      <div class="hero__orb hero__orb--3"></div>
+    </div>
+
+    <!-- Three.js Hero Scene -->
+    <div id="hero-canvas" class="hero__canvas" aria-hidden="true"></div>
+
+    <div class="container hero__content fade-in">
+      <p class="hero__subtitle">Digital Craftsman</p>
+
+      <h1 class="hero__title">
+        <span class="text-gradient-subtle">Ik maak wat</span>
+        <span class="line-2 text-gradient">ik bedenk.</span>
+      </h1>
+
+      <p class="hero__description">
+        Ik ben Jelger Sieler. CMD-designer, developer en 3D-maker. Van complexe webshops tot tastbare 3D-iconen: ik breng ideeën tot leven in pixels, code en materiaal.
+      </p>
+
+      <div class="hero__buttons">
+        <a href="#contact" class="btn btn--primary">
+          Laten we bouwen
+        </a>
+        <a href="#projecten" class="btn btn--outline">
+          Bekijk projecten
+        </a>
+      </div>
+    </div>
+
+    <div class="hero__marquee">
+      <a href="#over" class="hero__scroll" aria-label="Scroll naar beneden">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+        <span>Scroll</span>
+      </a>
+
+      <div class="hero__marquee-inner" aria-hidden="true">
+        <div class="hero__marquee-track">
+        <span>Design</span><span>·</span>
+        <span>Development</span><span>·</span>
+        <span>3D Printing</span><span>·</span>
+        <span>Webshops</span><span>·</span>
+        <span>Storytelling</span><span>·</span>
+        <span>Prototyping</span><span>·</span>
+        <span>Design</span><span>·</span>
+        <span>Development</span><span>·</span>
+        <span>3D Printing</span><span>·</span>
+        <span>Webshops</span><span>·</span>
+        <span>Storytelling</span><span>·</span>
+        <span>Prototyping</span><span>·</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== OVER MIJ (DE MAKER) ========== -->
+  <section id="over" class="section--fullpage over-mij" aria-labelledby="over-title">
+    <div class="container">
+      <div class="over-mij__grid">
+
+        <!-- Visual panel -->
+        <div class="over-mij__visual fade-in-left" aria-hidden="true">
+          <div class="over-mij__stats">
+            <div class="stat-card">
+              <p class="stat-card__label">Filosofie</p>
+              <p class="stat-card__value">Geen half werk</p>
+              <p class="stat-card__sub">tot ik het beheers</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-card__label">Aanpak</p>
+              <p class="stat-card__value">Sociaal &amp; grondig</p>
+              <p class="stat-card__sub">onderbuik + onderzoek</p>
+            </div>
+          </div>
+          <div class="over-mij__bars">
+            <div class="over-mij__bar"></div>
+            <div class="over-mij__bar"></div>
+            <div class="over-mij__bar"></div>
+          </div>
+        </div>
+
+        <!-- Text -->
+        <div class="over-mij__text fade-in-right">
+          <p class="section-label">De Maker</p>
+          <h2 class="section-title" id="over-title">Het moment dat een idee <span class="text-gradient">tastbaar wordt.</span></h2>
+
+          <div class="over-mij__paragraphs">
+            <p>
+              Er is niets mooiers dan iets op je scherm ontwerpen en het even later als fysiek object in je handen houden. Dat gevoel verveelt nooit. Of ik nu een 3D-model print of een unieke webervaring bouw met Spline: ik zoek altijd de grens op tussen het digitale en het fysieke.
+            </p>
+            <p>
+              Ik doe geen half werk. Als ik niet weet hoe iets moet, duik ik erin tot ik het beheers. Ik ben een sociale maker: ik spar graag met anderen omdat ik geloof dat je door vaardigheden te combineren tot het beste eindresultaat komt. Ik werk op mijn onderbuikgevoel, maar onderbouw alles met grondig onderzoek. Ik streef naar perfectie, maar weet ook wanneer ik afstand moet nemen om mijn werk weer met een frisse blik te verbeteren.
+            </p>
+            <p>
+              Een werk is voor mij nooit 'klaar', er is altijd ruimte voor groei.
+            </p>
+          </div>
+
+          <!-- Skills -->
+          <div class="skills-grid">
+            <div class="skill-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>UX/UI Design</span>
+            </div>
+            <div class="skill-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Front-end Development</span>
+            </div>
+            <div class="skill-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>3D Modeling &amp; Printing</span>
+            </div>
+            <div class="skill-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Spline &amp; Three.js</span>
+            </div>
+            <div class="skill-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Interactive Storytelling</span>
+            </div>
+            <div class="skill-item">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <span>Visual &amp; Product Design</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PROJECTEN ========== -->
+  <section id="projecten" class="section--fullpage projecten" aria-labelledby="projecten-title">
+    <div class="container">
+      <div class="projecten__header fade-in">
+        <p class="section-label">Portfolio</p>
+        <h2 class="section-title" id="projecten-title">Uitgelichte <span class="text-gradient">projecten</span></h2>
+      </div>
+
+      <div class="projecten__grid stagger-children">
+
+        <!-- Brouwerij Rolduc -->
+        <article class="project-card fade-in">
+          <div class="project-card__number" aria-hidden="true">01</div>
+          <div class="project-card__content">
+            <h3 class="project-card__title">Brouwerij Rolduc</h3>
+            <p class="project-card__type">Maatwerk website &amp; webshop</p>
+            <p class="project-card__desc">Van reserveren tot bestellen; ik heb alles zelf ontworpen en geprogrammeerd met een focus op een soepele gebruikerservaring die écht werkt.</p>
+            <a href="https://brouwerijrolduc.nl" target="_blank" rel="noopener noreferrer" class="project-card__link">
+              Bekijk project
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- Heerlen Zwarte Goud -->
+        <article class="project-card fade-in">
+          <div class="project-card__number" aria-hidden="true">02</div>
+          <div class="project-card__content">
+            <h3 class="project-card__title">Heerlen — Story van het Zwarte Goud</h3>
+            <p class="project-card__type">Interactieve storytelling experience</p>
+            <p class="project-card__desc">Geprogrammeerd en vormgegeven door mij. Een reis door het verleden, heden en de toekomst van Heerlen en de impact van steenkool.</p>
+            <a href="https://storyvanhet zwartegoud.nl" target="_blank" rel="noopener noreferrer" class="project-card__link">
+              Bekijk project
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+          </div>
+        </article>
+
+        <!-- CodeMonster -->
+        <article class="project-card fade-in">
+          <div class="project-card__number" aria-hidden="true">03</div>
+          <div class="project-card__content">
+            <h3 class="project-card__title">CodeMonster</h3>
+            <p class="project-card__type">Codeer-workshop platform in p5.js</p>
+            <p class="project-card__desc">Samen met een tof team heb ik deze tool gebouwd om jongeren te leren programmeren. Ik was verantwoordelijk voor de unieke stijl en de front-end.</p>
+            <a href="https://codemonster.nl" target="_blank" rel="noopener noreferrer" class="project-card__link">
+              Bekijk project
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== JELGERS3D ========== -->
+  <section id="jelgers3d" class="section--fullpage jelgers3d" aria-labelledby="jelgers3d-title">
+    <div class="container">
+      <div class="jelgers3d__card fade-in">
+        <div class="jelgers3d__glow" aria-hidden="true"></div>
+
+        <div class="jelgers3d__grid">
+          <div class="jelgers3d__text">
+            <p class="section-label">JelgerS3D</p>
+            <h2 class="section-title" id="jelgers3d-title">
+              Lokale iconen in een<br>
+              <span class="text-gradient">nieuw jasje.</span>
+            </h2>
+            <p class="section-desc" style="margin-bottom: 1.5rem;">
+              Met mijn bedrijf JelgerS3D maak ik de historie van Parkstad tastbaar. Een hoogtepunt is mijn interpretatie van het Mijnwerkersmonument 'D'r Joep'. Ik heb het beeld een moderne, hoekige vorm gegeven — een verwijzing naar de vorm van steenkool — en geprint in diepzwart.
+            </p>
+
+            <div class="jelgers3d__impact">
+              <div class="jelgers3d__impact-header">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>Te vinden op iconische plekken</span>
+              </div>
+              <div class="jelgers3d__locations">
+                <span class="location-tag">Nationaal Mijnmuseum</span>
+                <span class="location-tag">Discovery Museum</span>
+                <span class="location-tag">Brouwerij Rolduc</span>
+                <span class="location-tag">Boekhandel Deurenberg</span>
+              </div>
+            </div>
+
+            <p class="jelgers3d__extra">
+              Ik help lokale bedrijven met alles van visual design tot merchandise en unieke 3D-prototypes.
+            </p>
+          </div>
+
+          <!-- Three.js Print Scene -->
+          <div id="print-canvas" class="print-canvas" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CONTACT ========== -->
+  <section id="contact" class="section--fullpage contact" aria-labelledby="contact-title">
+    <div class="container">
+      <div class="contact__inner fade-in">
+        <p class="section-label">Contact</p>
+        <h2 class="section-title" id="contact-title" style="text-align:center;">
+          Laten we iets <span class="text-gradient">bouwen.</span>
+        </h2>
+        <p class="contact__desc">
+          Heb je een project voor ogen? Of het nu gaat om webdesign, programmeren of een fysiek product: ik denk graag met je mee van concept tot realisatie.
+        </p>
+
+        <!-- Contact form -->
+        <form id="contact-form" class="contact-form" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name">Naam</label>
+              <input type="text" id="name" name="name" placeholder="Je naam" required autocomplete="name">
+            </div>
+            <div class="form-group">
+              <label for="email">E-mail</label>
+              <input type="email" id="email" name="email" placeholder="je@email.nl" required autocomplete="email">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="message">Bericht</label>
+            <textarea id="message" name="message" placeholder="Vertel me over je project..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn--primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Verstuur bericht
+          </button>
+        </form>
+
+        <p class="contact__or">of mail direct</p>
+
+        <div class="contact__mail-btn">
+          <a href="mailto:hello@jelgersieler.nl" class="btn btn--primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Stuur een bericht
+            <svg class="btn__arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+          </a>
+        </div>
+
+        <div class="contact__socials">
+          <a href="#" class="social-link" aria-label="LinkedIn profiel">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+          </a>
+          <a href="#" class="social-link" aria-label="GitHub profiel">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== FOOTER ========== -->
+    <footer class="footer" role="contentinfo">
+      <div class="container">
+        <p class="footer__logo">JS<span>.</span></p>
+        <nav class="footer__links" aria-label="Footer navigatie">
+          <a href="#over">Over mij</a>
+          <a href="#projecten">Projecten</a>
+          <a href="#jelgers3d">JelgerS3D</a>
+          <a href="#contact">Contact</a>
+        </nav>
+        <p class="footer__copy">&copy; <span id="footer-year">2026</span> Jelger Sieler. Alle rechten voorbehouden.</p>
+        <div class="footer__gradient-line" aria-hidden="true"></div>
+      </div>
+    </footer>
+  </section>
+
+  </main>
+
+  <!-- Scripts -->
+  <script src="js/main.js"></script>
+  <script src="js/scenes.js" defer></script>
+</body>
+</html>
