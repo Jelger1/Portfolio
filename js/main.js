@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initContactForm();
   setFooterYear();
   initSanctusCarousel();
+  initProcessToggles();
 });
 
 /* ---------- MOBILE MENU ---------- */
@@ -247,4 +248,156 @@ function initSanctusCarousel() {
       diff > 0 ? showImage(currentIndex + 1) : showImage(currentIndex - 1);
     }
   }, { passive: true });
+}
+
+/* ---------- PROJECT PROCESS MODAL ---------- */
+function initProcessToggles() {
+  const modal = document.getElementById('process-modal');
+  if (!modal) return;
+
+  const backdrop = modal.querySelector('.process-modal__backdrop');
+  const closeBtn = modal.querySelector('.process-modal__close');
+  const browserUrl = modal.querySelector('.process-modal__browser-url');
+  const browserBody = modal.querySelector('.process-modal__browser-body');
+  const iframe = modal.querySelector('.process-modal__iframe');
+  const badgeEl = modal.querySelector('.process-modal__badge');
+  const titleEl = modal.querySelector('.process-modal__title');
+  const textEl = modal.querySelector('.process-modal__text');
+  const skillsEl = modal.querySelector('.process-modal__skills');
+
+  // Process data per project
+  const processData = {
+    rolduc: {
+      title: 'Brouwerij Rolduc',
+      url: 'https://www.brouwerij-rolduc.nl',
+      urlLabel: 'brouwerij-rolduc.nl',
+      badge: 'solo',
+      badgeLabel: 'Zelfstandig project',
+      text: [
+        'Dit project heb ik volledig zelfstandig ontworpen en gecodeerd. Vanaf het eerste gesprek met de opdrachtgever heb ik het hele traject doorlopen: van concept tot een werkend eindproduct.',
+        'Gedurende het proces ben ik veel in contact geweest met de opdrachtgever. Niet alleen om te leveren wat hij voor ogen had, maar ook om actief mee te denken over wat er miste, wat beter kon en welke kansen hij misschien over het hoofd zag. Door tools zoals Web3Forms in te zetten, heb ik ervoor gezorgd dat de site niet alleen mooi is, maar ook optimaal functioneert.'
+      ],
+      skills: ['HTML & CSS', 'JavaScript', 'Web3Forms', 'UI Design', 'Klantcontact']
+    },
+    heerlen: {
+      title: 'Heerlen: Miljarden kilo\u2019s steenkool',
+      url: 'https://mia-mms-2526.github.io/team03/',
+      urlLabel: 'Interactieve Story',
+      badge: 'team',
+      badgeLabel: 'Groepsproject',
+      text: [
+        'Dit project heb ik samen met een team gerealiseerd. Naast mijn visuele rol heb ik ook de volledige website geprogrammeerd. Ik heb de visuele stijl ontworpen, meegedacht over de opbouw en structuur van de video, en alles technisch tot leven gebracht in code.',
+        'Daarnaast was ik verantwoordelijk voor het bedenken en schrijven van de content. Het was een fijne samenwerking waarbij iedereen zijn eigen expertise inbracht en we samen tot een sterk eindresultaat kwamen.'
+      ],
+      skills: ['HTML & CSS', 'JavaScript', 'Visual Design', 'Content Writing', 'Video Concept', 'Storytelling']
+    },
+    codemonster: {
+      title: 'CodeMonster',
+      url: 'https://mia-dp-2425.github.io/team01/index.html',
+      urlLabel: 'CodeMonster Platform',
+      badge: 'team',
+      badgeLabel: 'Groepsproject',
+      text: [
+        'Binnen dit groepsproject was ik verantwoordelijk voor het volledige design en de front-end development. Ik heb de website ontworpen en gecodeerd, en ervoor gezorgd dat alles goed werkte \u2014 inclusief het responsive design.',
+        'Van wireframes tot het uiteindelijke werkende platform: ik zorgde ervoor dat de visuele identiteit en de technische uitvoering naadloos op elkaar aansloten.'
+      ],
+      skills: ['UI Design', 'HTML & CSS', 'JavaScript', 'Responsive Design']
+    },
+    sanctus: {
+      title: 'Sanctus Fusion',
+      url: null,
+      urlLabel: null,
+      previewImage: 'assets/Can-Mockup-Sanctus-Fusion-Info.jpg',
+      badge: 'solo',
+      badgeLabel: 'Zelfstandig project',
+      text: [
+        'Bij dit project heb ik veel creatieve vrijheid gekregen, maar ik heb vooral in het begin regelmatig afgestemd met de opdrachtgever om te zorgen dat de richting klopte. Die basis gaf me vertrouwen om het concept verder uit te werken.',
+        'Ik heb veel in Illustrator en Photoshop gewerkt. Toen het bier nog niet gebrouwen was, ben ik onderzoek gaan doen naar de smaakprofielen van de hopsoorten die in het bier verwerkt zouden worden. Dat vormde de basis voor mijn ontwerp. Daarnaast heb ik goed gekeken naar hoe andere merken hun IPA-bieren visueel positioneren en heb ik de huisstijl van Brouwerij Rolduc en D\u00e9 Wie\u00ebtsjaf gecombineerd tot een eigen, herkenbare stijl.'
+      ],
+      skills: ['Illustrator', 'Photoshop', 'InDesign', 'Branding', 'Onderzoek']
+    }
+  };
+
+  const soloIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+  const teamIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+
+  function openModal(key) {
+    const data = processData[key];
+    if (!data) return;
+
+    // Set badge
+    badgeEl.className = 'process-modal__badge process-modal__badge--' + data.badge;
+    badgeEl.innerHTML = (data.badge === 'solo' ? soloIcon : teamIcon) + ' ' + data.badgeLabel;
+
+    // Set title
+    titleEl.textContent = data.title;
+
+    // Set text
+    textEl.innerHTML = data.text.map(function(p) { return '<p>' + p + '</p>'; }).join('');
+
+    // Set skills
+    skillsEl.innerHTML = data.skills.map(function(s) { return '<span>' + s + '</span>'; }).join('');
+
+    // Set preview (iframe or image)
+    if (data.url) {
+      browserUrl.textContent = data.urlLabel;
+      browserUrl.style.display = '';
+      iframe.src = data.url;
+      iframe.style.display = '';
+
+      // Remove any existing image
+      var existingImg = browserBody.querySelector('.process-modal__image-preview');
+      if (existingImg) existingImg.remove();
+    } else {
+      browserUrl.textContent = 'Preview';
+      iframe.style.display = 'none';
+      iframe.src = '';
+
+      // Show image instead
+      var existingImg = browserBody.querySelector('.process-modal__image-preview');
+      if (existingImg) existingImg.remove();
+
+      if (data.previewImage) {
+        var img = document.createElement('img');
+        img.src = data.previewImage;
+        img.alt = data.title + ' preview';
+        img.className = 'process-modal__image-preview';
+        browserBody.appendChild(img);
+      }
+    }
+
+    // Show modal
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeModal() {
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('modal-open');
+
+    // Clear iframe after transition
+    setTimeout(function() {
+      iframe.src = '';
+    }, 400);
+  }
+
+  // Attach toggle buttons
+  document.querySelectorAll('.project__process-toggle').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var key = btn.getAttribute('data-process');
+      openModal(key);
+    });
+  });
+
+  // Close handlers
+  closeBtn.addEventListener('click', closeModal);
+  backdrop.addEventListener('click', closeModal);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      closeModal();
+    }
+  });
 }

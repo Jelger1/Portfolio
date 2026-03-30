@@ -40,7 +40,6 @@
       <a href="#" class="navbar__logo" aria-label="Jelger — Home">J<span>S</span></a>
 
       <div class="navbar__links">
-        <a href="#diensten">Diensten</a>
         <a href="#over">Over mij</a>
         <a href="#project-rolduc">Projecten</a>
         <a href="#3dprint">3D Print</a>
@@ -54,7 +53,6 @@
     </div>
 
     <div class="navbar__mobile" id="mobile-menu" role="menu">
-      <a href="#diensten" role="menuitem">Diensten</a>
       <a href="#over" role="menuitem">Over mij</a>
       <a href="#project-rolduc" role="menuitem">Projecten</a>
       <a href="#3dprint" role="menuitem">3D Print</a>
@@ -93,14 +91,14 @@
         <a href="#contact" class="btn btn--primary">
           Neem contact op
         </a>
-        <a href="#diensten" class="btn btn--outline">
-          Bekijk diensten
+        <a href="#project-rolduc" class="btn btn--outline">
+          Bekijk projecten
         </a>
       </div>
     </div>
 
     <div class="hero__marquee">
-      <a href="#diensten" class="hero__scroll" aria-label="Scroll naar beneden">
+      <a href="#over" class="hero__scroll" aria-label="Scroll naar beneden">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
         <span>Scroll</span>
       </a>
@@ -124,87 +122,16 @@
     </div>
   </section>
 
-  <!-- ========== DIENSTEN ========== -->
-  <section id="diensten" class="section--fullpage diensten" aria-labelledby="diensten-title">
-    <!-- Three.js Diensten Scene -->
-    <div id="diensten-canvas" class="diensten__canvas" aria-hidden="true"></div>
-
-    <div class="container">
-      <div class="diensten__header fade-in">
-        <p class="section-label">Wat ik doe</p>
-        <h2 class="section-title" id="diensten-title"><span class="text-gradient">Diensten</span></h2>
-        <p class="section-desc">
-          Met een brede achtergrond in design, development en 3D-printing help ik bedrijven om ideeën om te zetten in tastbare impact.
-        </p>
-      </div>
-
-      <div class="diensten__grid stagger-children">
-
-        <!-- UX Design -->
-        <article class="dienst-card fade-in">
-          <div class="dienst-card__icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M2 7h20"/><path d="M2 12h20"/></svg>
-          </div>
-          <h3 class="dienst-card__title">UX Design</h3>
-          <p class="dienst-card__desc">Hoe bereikt de gebruiker makkelijk zijn doel? Ik ontwerp intuïtieve ervaringen op basis van onderzoek, testen en menselijke creativiteit.</p>
-        </article>
-
-        <!-- UI Design -->
-        <article class="dienst-card fade-in">
-          <div class="dienst-card__icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M17 2H7a5 5 0 0 0-5 5v10a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V7a5 5 0 0 0-5-5Z"/><path d="M2 17l3.5-4.5a2.5 2.5 0 0 1 3.5-.5L17 19"/></svg>
-          </div>
-          <h3 class="dienst-card__title">UI Design</h3>
-          <p class="dienst-card__desc">De visuele kant: knoppen, typografie, kleurgebruik en interactie. Pixel-perfect en met oog voor detail, altijd consistent en schaalbaar.</p>
-        </article>
-
-        <!-- Product Design -->
-        <article class="dienst-card fade-in">
-          <div class="dienst-card__icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-          </div>
-          <h3 class="dienst-card__title">Product Design</h3>
-          <p class="dienst-card__desc">Van het eerste concept tot de laatste pixel. Ik ontwerp oplossingen die niet alleen mooi zijn, maar ook technisch haalbaar en logisch voor de gebruiker.</p>
-        </article>
-
-        <!-- Interaction Design -->
-        <article class="dienst-card fade-in">
-          <div class="dienst-card__icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
-          </div>
-          <h3 class="dienst-card__title">Interaction Design</h3>
-          <p class="dienst-card__desc">De logica en de 'flow' tussen mens en machine. Geoptimaliseerde micro-interacties, animaties en overgangen die het verschil maken.</p>
-        </article>
-
-        <!-- Front-end Development -->
-        <article class="dienst-card fade-in">
-          <div class="dienst-card__icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-          </div>
-          <h3 class="dienst-card__title">Front-end Development</h3>
-          <p class="dienst-card__desc">Designs tot leven brengen in VS Code met HTML, CSS en JavaScript. Ik schrijf mijn eigen code en gebruik AI als slimme assistent om sneller tot een vlekkeloos resultaat te komen.</p>
-        </article>
-
-        <!-- 3D Printing -->
-        <article class="dienst-card fade-in">
-          <div class="dienst-card__icon" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          </div>
-          <h3 class="dienst-card__title">3D Printing</h3>
-          <p class="dienst-card__desc">Van uniek digitaal ontwerp naar fysiek product. Custom prints en prototypes voor musea, winkels en bedrijven.</p>
-        </article>
-
-      </div>
-    </div>
-  </section>
-
   <!-- ========== OVER MIJ ========== -->
   <section id="over" class="section--fullpage over-mij" aria-labelledby="over-title">
     <div class="container">
       <div class="over-mij__grid">
 
         <!-- Visual panel -->
-        <div class="over-mij__visual fade-in-left" aria-hidden="true">
+        <div class="over-mij__visual fade-in-left">
+          <div class="over-mij__photo">
+            <img src="assets/Jelger-Pic.jpg" alt="Jelger" loading="lazy" />
+          </div>
           <div class="over-mij__stats">
             <div class="stat-card">
               <p class="stat-card__label">Ervaring</p>
@@ -216,11 +143,6 @@
               <p class="stat-card__value">7+</p>
               <p class="stat-card__sub">Van websites tot museum-exposities</p>
             </div>
-          </div>
-          <div class="over-mij__bars">
-            <div class="over-mij__bar"></div>
-            <div class="over-mij__bar"></div>
-            <div class="over-mij__bar"></div>
           </div>
         </div>
 
@@ -306,10 +228,16 @@
             <span class="project__tag">Webshop</span>
             <span class="project__tag">UI Design</span>
           </div>
-          <a href="https://www.brouwerij-rolduc.nl" class="btn btn--primary" target="_blank" rel="noopener noreferrer">
-            Bekijk project
-            <svg class="btn__arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-          </a>
+          <div class="project__buttons">
+            <a href="https://www.brouwerij-rolduc.nl" class="btn btn--primary" target="_blank" rel="noopener noreferrer">
+              Bekijk project
+              <svg class="btn__arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+            <button class="btn btn--outline project__process-toggle" data-process="rolduc">
+              Mijn proces
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -340,10 +268,16 @@
             <span class="project__tag">Full Stack</span>
             <span class="project__tag">Storytelling</span>
           </div>
-          <a href="https://mia-mms-2526.github.io/team03/" class="btn btn--primary" target="_blank" rel="noopener noreferrer">
-            Bekijk project
-            <svg class="btn__arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-          </a>
+          <div class="project__buttons">
+            <a href="https://mia-mms-2526.github.io/team03/" class="btn btn--primary" target="_blank" rel="noopener noreferrer">
+              Bekijk project
+              <svg class="btn__arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+            <button class="btn btn--outline project__process-toggle" data-process="heerlen">
+              Mijn proces
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -374,10 +308,16 @@
             <span class="project__tag">Educatie</span>
             <span class="project__tag">Workshop</span>
           </div>
-          <a href="https://mia-dp-2425.github.io/team01/index.html" class="btn btn--primary" target="_blank" rel="noopener noreferrer">
-            Bekijk project
-            <svg class="btn__arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-          </a>
+          <div class="project__buttons">
+            <a href="https://mia-dp-2425.github.io/team01/index.html" class="btn btn--primary" target="_blank" rel="noopener noreferrer">
+              Bekijk project
+              <svg class="btn__arrow" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+            <button class="btn btn--outline project__process-toggle" data-process="codemonster">
+              Mijn proces
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -403,6 +343,13 @@
             <span class="project__tag">Photoshop</span>
             <span class="project__tag">Illustrator</span>
             <span class="project__tag">InDesign</span>
+          </div>
+
+          <div class="project__buttons">
+            <button class="btn btn--outline project__process-toggle" data-process="sanctus">
+              Mijn proces
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
           </div>
         </div>
 
@@ -575,7 +522,6 @@
       <div class="container">
         <p class="footer__logo">J<span>S</span></p>
         <nav class="footer__links" aria-label="Footer navigatie">
-          <a href="#diensten">Diensten</a>
           <a href="#over">Over mij</a>
           <a href="#project-rolduc">Projecten</a>
           <a href="#3dprint">3D Print</a>
@@ -588,6 +534,39 @@
   </section>
 
   </main>
+
+  <!-- ========== PROCESS MODAL ========== -->
+  <div class="process-modal" id="process-modal" aria-hidden="true" role="dialog" aria-label="Project proces">
+    <div class="process-modal__backdrop"></div>
+    <div class="process-modal__container">
+      <button class="process-modal__close" aria-label="Sluiten">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+
+      <div class="process-modal__grid">
+        <!-- Left: Project Preview -->
+        <div class="process-modal__preview">
+          <div class="process-modal__browser">
+            <div class="project__browser-dots" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="process-modal__browser-url"></div>
+            <div class="process-modal__browser-body">
+              <iframe class="process-modal__iframe" title="Project preview" sandbox="allow-scripts allow-same-origin"></iframe>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Process Info -->
+        <div class="process-modal__info">
+          <div class="process-modal__badge"></div>
+          <h3 class="process-modal__title"></h3>
+          <div class="process-modal__text"></div>
+          <div class="process-modal__skills"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ========== JELLY-BOT CHATBOT ========== -->
   <div id="jellybot" class="jellybot" aria-label="Jelly-bot chatassistent">
