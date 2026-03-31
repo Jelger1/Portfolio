@@ -28,6 +28,7 @@
 
   <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/examples/js/loaders/GLTFLoader.js" defer></script>
 </head>
 <body>
 
@@ -130,7 +131,7 @@
         <!-- Visual panel -->
         <div class="over-mij__visual fade-in-left">
           <div class="over-mij__photo">
-            <img src="assets/Jelger-Pic.jpg" alt="Jelger" loading="lazy" />
+            <div id="model-viewer" class="model-viewer"></div>
           </div>
           <div class="over-mij__stats">
             <div class="stat-card">
@@ -615,6 +616,7 @@
   <!-- Scripts -->
   <script src="js/main.js" defer></script>
   <script src="js/scenes.js" defer></script>
+  <script src="js/model-viewer.js" defer></script>
   <script src="js/chatbot.js?v=2" defer></script>
 </body>
 </html>
