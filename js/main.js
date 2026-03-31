@@ -307,7 +307,7 @@ function initProcessToggles() {
       title: 'Sanctus Fusion',
       url: null,
       urlLabel: null,
-      previewImage: 'assets/Can-Mockup-Sanctus-Fusion-Info.jpg',
+      previewImage: 'assets/Beer-Tap-Mockup-V2.jpg',
       badge: 'solo',
       badgeLabel: 'Zelfstandig project',
       text: [
