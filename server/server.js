@@ -8,6 +8,8 @@ const PORT = process.env.PORT || 3000;
 // CORS — allow GitHub Pages and local development
 const ALLOWED_ORIGINS = [
   'https://jelger1.github.io',
+  'https://jelgersieler.nl',
+  'https://www.jelgersieler.nl',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
 ];
@@ -69,6 +71,7 @@ PROJECTEN:
 1. Brouwerij Rolduc (brouwerij-rolduc.nl) — Volledig informatieve website, webshop en reserveringssysteem in één. Van A tot Z ontwikkeld, inclusief afgeschermde bestelomgeving voor horeca. Sinds de lancering al 100+ reserveringen en orders.
 2. Heerlen: Miljarden kilo's steenkool — Wat deden miljarden kilo's steenkool met Heerlen? Een diepe duik in de geschiedenis van de stad, van de tijd vóór de ontdekking tot na de mijnsluiting. Interactieve ervaring op basis van historische data.
 3. CodeMonster — Een doelgericht workshop-concept waarbij kinderen leren programmeren door kunst te maken. Van visual design tot platform en cursusmodel, uitvoerig getest door de doelgroep.
+4. Sanctus Fusion (Dé Wieëtsjaf) — Volledige branding voor een exclusief bier: de Sanctus Fusion, een unieke volle IPA speciaal gebrouwen door Brouwerij Rolduc voor Dé Wieëtsjaf. Van logo-ontwerp tot posters, t-shirts, tafelkaarten en social media content. Alles volledig zelf ontworpen in Photoshop, Illustrator en InDesign.
 
 CONTACT:
 - E-mail: sielerjelger@gmail.com
