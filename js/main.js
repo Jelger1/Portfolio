@@ -2,6 +2,37 @@
    JELGER PORTFOLIO — MAIN.JS
    ============================================ */
 
+/* ---------- LOADING SCREEN ---------- */
+(function initLoader() {
+  const loader = document.getElementById('loader');
+  const bar = document.getElementById('loader-bar');
+  if (!loader || !bar) return;
+
+  let progress = 0;
+
+  // Simulate progress while assets load
+  const interval = setInterval(() => {
+    // Slow down as we approach 90%
+    const increment = progress < 50 ? 3 : progress < 80 ? 1.5 : 0.4;
+    progress = Math.min(progress + increment, 90);
+    bar.style.width = progress + '%';
+  }, 60);
+
+  function finishLoading() {
+    clearInterval(interval);
+    bar.style.width = '100%';
+    setTimeout(() => {
+      loader.classList.add('loader--hidden');
+      document.body.classList.remove('loading');
+    }, 400);
+  }
+
+  window.addEventListener('load', finishLoading);
+
+  // Fallback: dismiss after 6s in case load event already fired
+  setTimeout(finishLoading, 6000);
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initScrollAnimations();
