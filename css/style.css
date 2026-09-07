@@ -56,6 +56,14 @@
   pointer-events: none;
 }
 
+/* Geen scroll zolang het laadscherm of een modal open is.
+   html heeft overflow-x: hidden, dus overflow op body alleen blokkeert scrollen niet.
+   Via :has() zetten we het op html zelf; scrollpositie blijft behouden. */
+html:has(body.loading),
+html:has(body.modal-open) {
+  overflow: hidden;
+}
+
 .loader__content {
   display: flex;
   flex-direction: column;
@@ -1368,10 +1376,6 @@ button {
 }
 
 /* Prevent body scroll when modal open */
-body.modal-open {
-  overflow: hidden;
-}
-
 /* ---------- SANCTUS FUSION SECTION ---------- */
 .sanctus-section {
   overflow: hidden;
@@ -2267,6 +2271,17 @@ body.modal-open {
   color: var(--primary);
 }
 
+.jellybot__msg--bot a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+
+.jellybot__msg--bot a:hover {
+  color: var(--gradient-end);
+}
+
 /* Typing indicator */
 .jellybot__typing {
   display: flex;
@@ -2346,6 +2361,17 @@ body.modal-open {
 
 .jellybot__input input::placeholder {
   color: var(--fg-muted);
+}
+
+.jellybot__input input:disabled,
+.jellybot__input button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.jellybot__input button[type="submit"]:disabled:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .jellybot__input button[type="submit"] {

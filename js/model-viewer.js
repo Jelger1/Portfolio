@@ -2,6 +2,7 @@
    3D MODEL VIEWER — model-viewer.js
    Particle system with glow, color gradient,
    entrance animation, mouse interaction & click explosion
+   Requires: three.js + GLTFLoader (CDN) en createRenderLoop() uit main.js
    ============================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,6 +39,8 @@ function initModelViewer() {
   const raycaster = new THREE.Raycaster();
   const intersectPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
   const mouseWorld = new THREE.Vector3();
+  const invMatrix = new THREE.Matrix4();
+  const localMouseWorld = new THREE.Vector3();
 
   window.addEventListener('mousemove', (e) => {
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -232,7 +235,6 @@ function initModelViewer() {
   const clock = new THREE.Clock();
 
   function animate() {
-    requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
     smoothMouse.x += (mouse.x - smoothMouse.x) * 0.02;
@@ -299,8 +301,8 @@ function initModelViewer() {
       else if (assembled) {
         raycaster.setFromCamera(localMouse, camera);
         raycaster.ray.intersectPlane(intersectPlane, mouseWorld);
-        const inv = new THREE.Matrix4().copy(particleGroup.matrixWorld).invert();
-        const lm = mouseWorld.clone().applyMatrix4(inv);
+        invMatrix.copy(particleGroup.matrixWorld).invert();
+        const lm = localMouseWorld.copy(mouseWorld).applyMatrix4(invMatrix);
         const rSq = INTERACTION_RADIUS * INTERACTION_RADIUS;
 
         for (let i = 0; i < count; i++) {
@@ -332,7 +334,7 @@ function initModelViewer() {
     renderer.render(scene, camera);
   }
 
-  animate();
+  createRenderLoop(container, animate);
 
   /* ---------- Resize ---------- */
   function onResize() {

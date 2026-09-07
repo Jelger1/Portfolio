@@ -1,0 +1,22 @@
+# Render Blueprint — geëxporteerd vanuit het Render-dashboard (2026-09-07).
+# De OPENAI_API_KEY staat hier bewust NIET in (sync: false): die beheer je in
+# Render → jellybot-backend → Environment.
+version: "1"
+projects:
+- name: My project
+  environments:
+  - name: Production
+    services:
+    - type: web
+      name: jellybot-backend
+      runtime: node
+      repo: https://github.com/Jelger1/Portfolio
+      plan: free
+      envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      region: frankfurt
+      buildCommand: npm install
+      startCommand: node server.js
+      autoDeployTrigger: commit
+      rootDir: server

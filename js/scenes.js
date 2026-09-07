@@ -1,6 +1,6 @@
 /* ============================================
    THREE.JS SCENES — scenes.js
-   Requires: three.js (via CDN in index.html)
+   Requires: three.js (via CDN in index.html) en createRenderLoop() uit main.js
    ============================================ */
 
 /* ---------- HERO SCENE ---------- */
@@ -131,7 +131,6 @@ function initHeroScene() {
   const clock = new THREE.Clock();
 
   function animate() {
-    requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
     // Smooth mouse follow (lerp)
@@ -195,7 +194,7 @@ function initHeroScene() {
     renderer.render(scene, camera);
   }
 
-  animate();
+  createRenderLoop(container, animate);
 
   // Resize
   function onResize() {
@@ -300,15 +299,14 @@ function initDienstenScene() {
   scene.add(new THREE.Points(spGeo, spMat));
 
   const clock = new THREE.Clock();
+  const worldPos = new THREE.Vector3();
 
   function animate() {
-    requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
     cubes.forEach(cube => {
       // World position of cube base (accounting for group rotation)
-      const worldPos = new THREE.Vector3(cube._baseX, 0, cube._baseZ);
-      worldPos.applyMatrix4(group.matrixWorld);
+      worldPos.set(cube._baseX, 0, cube._baseZ).applyMatrix4(group.matrixWorld);
 
       // Distance from mouse to cube in xz plane
       const dx = worldPos.x - dMouseWorld.x;
@@ -332,7 +330,7 @@ function initDienstenScene() {
     renderer.render(scene, camera);
   }
 
-  animate();
+  createRenderLoop(container, animate);
 
   function onResize() {
     camera.aspect = container.clientWidth / container.clientHeight;
@@ -407,6 +405,8 @@ function initPrintScene() {
     color: 0x03bcca,
     roughness: 0.15,
     metalness: 0.9,
+    emissive: 0x03bcca,
+    emissiveIntensity: 0,
   });
   const dodec = new THREE.Mesh(dodecGeo, dodecMat);
   dodec.position.set(0, 0.5, 0);
@@ -475,7 +475,6 @@ function initPrintScene() {
   });
 
   function animate() {
-    requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
     // Auto rotate + manual control
@@ -499,7 +498,6 @@ function initPrintScene() {
 
     // Smooth glow
     dodecCurrentGlow += (targetGlow - dodecCurrentGlow) * 0.1;
-    dodecMat.emissive = new THREE.Color(0x03bcca);
     dodecMat.emissiveIntensity = dodecCurrentGlow;
 
     // Cursor
@@ -521,7 +519,7 @@ function initPrintScene() {
     renderer.render(scene, camera);
   }
 
-  animate();
+  createRenderLoop(container, animate);
 
   function onResize() {
     camera.aspect = container.clientWidth / container.clientHeight;

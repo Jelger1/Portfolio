@@ -18,7 +18,11 @@
     bar.style.width = progress + '%';
   }, 60);
 
+  let finished = false;
+
   function finishLoading() {
+    if (finished) return;
+    finished = true;
     clearInterval(interval);
     bar.style.width = '100%';
     setTimeout(() => {
@@ -27,11 +31,48 @@
     }, 400);
   }
 
-  window.addEventListener('load', finishLoading);
+  if (document.readyState === 'complete') {
+    finishLoading();
+  } else {
+    window.addEventListener('load', finishLoading);
+  }
 
-  // Fallback: dismiss after 6s in case load event already fired
+  // Fallback: nooit langer dan 6s wachten (bijv. als een extern script blijft hangen)
   setTimeout(finishLoading, 6000);
 })();
+
+/* ---------- RENDER LOOP HELPER (gebruikt door scenes.js & model-viewer.js) ----------
+   Draait requestAnimationFrame alleen zolang de container in beeld is.
+   Scheelt flink wat GPU/CPU (en accu) op pagina's met meerdere 3D-scenes. */
+function createRenderLoop(container, frame) {
+  let visible = true;
+  let running = false;
+
+  function loop() {
+    if (!visible) {
+      running = false;
+      return;
+    }
+    requestAnimationFrame(loop);
+    frame();
+  }
+
+  function start() {
+    if (running) return;
+    running = true;
+    requestAnimationFrame(loop);
+  }
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible) start();
+    }, { threshold: 0 });
+    observer.observe(container);
+  }
+
+  start();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
@@ -102,8 +143,6 @@ function initNavbarScroll() {
   const navbar = document.querySelector('.navbar');
   if (!navbar) return;
 
-  let lastScroll = 0;
-
   window.addEventListener('scroll', () => {
     const currentScroll = window.scrollY;
 
@@ -112,8 +151,6 @@ function initNavbarScroll() {
     } else {
       navbar.style.borderBottomColor = '';
     }
-
-    lastScroll = currentScroll;
   }, { passive: true });
 }
 
@@ -122,15 +159,16 @@ function initContactForm() {
   const form = document.getElementById('contact-form');
   const feedback = document.getElementById('form-feedback');
   const submitBtn = document.getElementById('submit-btn');
+  const submitLabel = submitBtn ? submitBtn.querySelector('span') : null;
   if (!form) return;
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     // Basic client-side validation
-    const name = form.name.value.trim();
-    const email = form.email.value.trim();
-    const message = form.message.value.trim();
+    const name = form.elements.name.value.trim();
+    const email = form.elements.email.value.trim();
+    const message = form.elements.message.value.trim();
 
     if (!name || !email || !message) {
       showFeedback('Vul alle velden in.', 'error');
@@ -143,8 +181,8 @@ function initContactForm() {
     }
 
     // Disable button while sending
-    submitBtn.disabled = true;
-    submitBtn.querySelector('span').textContent = 'Versturen...';
+    if (submitBtn) submitBtn.disabled = true;
+    if (submitLabel) submitLabel.textContent = 'Versturen...';
 
     try {
       const formData = new FormData(form);
@@ -164,8 +202,8 @@ function initContactForm() {
     } catch (err) {
       showFeedback('Netwerkfout. Controleer je internetverbinding en probeer opnieuw.', 'error');
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.querySelector('span').textContent = 'Verstuur bericht';
+      if (submitBtn) submitBtn.disabled = false;
+      if (submitLabel) submitLabel.textContent = 'Verstuur bericht';
     }
   });
 
@@ -370,26 +408,20 @@ function initProcessToggles() {
     skillsEl.innerHTML = data.skills.map(function(s) { return '<span>' + s + '</span>'; }).join('');
 
     // Set preview (iframe or image)
+    const existingImg = browserBody.querySelector('.process-modal__image-preview');
+    if (existingImg) existingImg.remove();
+
     if (data.url) {
       browserUrl.textContent = data.urlLabel;
-      browserUrl.style.display = '';
       iframe.src = data.url;
       iframe.style.display = '';
-
-      // Remove any existing image
-      var existingImg = browserBody.querySelector('.process-modal__image-preview');
-      if (existingImg) existingImg.remove();
     } else {
       browserUrl.textContent = 'Preview';
       iframe.style.display = 'none';
-      iframe.src = '';
-
-      // Show image instead
-      var existingImg = browserBody.querySelector('.process-modal__image-preview');
-      if (existingImg) existingImg.remove();
+      iframe.src = 'about:blank';
 
       if (data.previewImage) {
-        var img = document.createElement('img');
+        const img = document.createElement('img');
         img.src = data.previewImage;
         img.alt = data.title + ' preview';
         img.className = 'process-modal__image-preview';
@@ -410,14 +442,14 @@ function initProcessToggles() {
 
     // Clear iframe after transition
     setTimeout(function() {
-      iframe.src = '';
+      iframe.src = 'about:blank';
     }, 400);
   }
 
   // Attach toggle buttons
   document.querySelectorAll('.project__process-toggle').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      var key = btn.getAttribute('data-process');
+      const key = btn.getAttribute('data-process');
       openModal(key);
     });
   });
