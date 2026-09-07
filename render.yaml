@@ -1,24 +1,22 @@
-# Render Blueprint — maakt in één keer een Web Service voor Post Studio.
-# Dashboard -> New -> Blueprint -> kies deze repo. Vul daarna de twee
-# "sync: false"-variabelen in onder Environment.
-services:
-  - type: web
-    name: post-studio
-    runtime: node
-    plan: free
-    buildCommand: npm install --omit=dev
-    startCommand: npm start
-    healthCheckPath: /api/health
-    envVars:
-      - key: NODE_VERSION
-        value: "20"
-      - key: ANTHROPIC_API_KEY
-        sync: false          # plak je key in het Render-dashboard, nooit in git
-      - key: ACCESS_CODE
-        sync: false          # gedeelde code die de tool meestuurt (zelf kiezen)
-      - key: AI_MODEL
-        value: claude-opus-5
-      - key: AI_EFFORT
-        value: high
-      - key: RATE_LIMIT
-        value: "30"
+# Render Blueprint — geëxporteerd vanuit het Render-dashboard (2026-09-07).
+# De OPENAI_API_KEY staat hier bewust NIET in (sync: false): die beheer je in
+# Render → jellybot-backend → Environment.
+version: "1"
+projects:
+- name: My project
+  environments:
+  - name: Production
+    services:
+    - type: web
+      name: jellybot-backend
+      runtime: node
+      repo: https://github.com/Jelger1/Portfolio
+      plan: free
+      envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      region: frankfurt
+      buildCommand: npm install
+      startCommand: node server.js
+      autoDeployTrigger: commit
+      rootDir: server
