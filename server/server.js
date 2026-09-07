@@ -1,268 +1,367 @@
-/* ============================================
-   JELLY-BOT BACKEND — server.js
-   Proxy tussen de portfolio-site en de OpenAI API.
-   De API key staat NOOIT in de frontend; alleen hier
-   (lokaal via server/.env, op Render via Environment Variables).
-   ============================================ */
+/* =============================================================================
+   server.js — Post Studio backend
+   -----------------------------------------------------------------------------
+   Eén kleine Node-server (geen framework) die twee dingen doet:
 
-require('dotenv').config();
-const express = require('express');
+     1. De tool zelf serveren (index.html, css/, js/) zodat frontend en API op
+        dezelfde origin draaien — geen CORS-gedoe, geen file://-beperkingen.
+     2. POST /api/suggest: de AI-assistent. Ontvangt de briefing, de huidige
+        tekst, de stijlgids en de instellingen, en laat Claude een of meer
+        complete postvarianten schrijven die passen bij het merk.
+
+   De API-key staat ALLEEN hier, in de omgevingsvariabele ANTHROPIC_API_KEY.
+   De browser krijgt hem nooit te zien.
+
+   Omgevingsvariabelen:
+     ANTHROPIC_API_KEY   verplicht — je Anthropic-key
+     ACCESS_CODE         aanbevolen — gedeelde code die de tool moet meesturen,
+                         zodat niet iedereen die je URL kent jouw key opstookt
+     AI_MODEL            standaard claude-opus-5
+     AI_EFFORT           low | medium | high (standaard high)
+     ALLOWED_ORIGINS     komma-lijst van extra origins die de API mogen
+                         aanroepen (bijv. http://127.0.0.1:5500 voor Live Server)
+     RATE_LIMIT          verzoeken per IP per 10 minuten (standaard 30)
+     AI_MOCK=1           geen API-aanroep; geeft een vaste testvariant terug
+     PORT                door Render gezet
+   ============================================================================= */
+'use strict';
+
+const http = require('http');
+const fs = require('fs');
 const path = require('path');
+const { z } = require('zod');
+const AnthropicModule = require('@anthropic-ai/sdk');
+const Anthropic = AnthropicModule.default || AnthropicModule;
+const { zodOutputFormat } = require('@anthropic-ai/sdk/helpers/zod');
 
-const app = express();
+const ROOT = path.resolve(__dirname, '..');
+const PORT = parseInt(process.env.PORT, 10) || 3000;
+const MODEL = process.env.AI_MODEL || 'claude-opus-5';
+const EFFORT = ['low', 'medium', 'high'].includes(process.env.AI_EFFORT) ? process.env.AI_EFFORT : 'high';
+const ACCESS_CODE = (process.env.ACCESS_CODE || '').trim();
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+const RATE_LIMIT = parseInt(process.env.RATE_LIMIT, 10) || 30;
+const MOCK = process.env.AI_MOCK === '1';
+const MAX_BODY = 400 * 1024;          // 400 KB: briefing + stijlgids + tekst
+const MAX_STYLEGUIDE_CHARS = 60000;   // ~15k tokens; ruim voor een stijlgids
 
-/* ---------- Config ---------- */
-const PORT = process.env.PORT || 3000;
-const OPENAI_API_KEY = (process.env.OPENAI_API_KEY || '').trim();
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4o-mini';
-const OPENAI_BASE_URL = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, '');
-const OPENAI_TIMEOUT_MS = 30_000;
-const IS_RENDER = Boolean(process.env.RENDER); // Render zet deze env var automatisch
+const client = process.env.ANTHROPIC_API_KEY ? new Anthropic() : null;
 
-const MAX_MESSAGES = 20;          // max. aantal berichten uit de geschiedenis dat we meesturen
-const MAX_CONTENT_LENGTH = 2000;  // max. tekens per bericht
-const RATE_LIMIT = { windowMs: 60_000, max: 20 }; // per IP per minuut
+/* ---------------------------------------------------------------------------
+   Uitvoerschema — Claude vult dit exact in (structured outputs)
+   ------------------------------------------------------------------------- */
+const THEMES = ['minimal', 'editorial', 'panel', 'bold', 'band', 'quote'];
 
-if (!OPENAI_API_KEY) {
-  console.error('⚠️  OPENAI_API_KEY ontbreekt. Zet hem in server/.env (lokaal) of bij Render → Environment.');
-} else if (!OPENAI_API_KEY.startsWith('sk-')) {
-  console.warn('⚠️  OPENAI_API_KEY ziet er niet uit als een OpenAI key (begint niet met "sk-").');
+const VariantSchema = z.object({
+  name: z.string().describe('Korte naam van de invalshoek, max 4 woorden, bijv. "Urgentie" of "Warm & persoonlijk"'),
+  label: z.string().describe('Eyebrow-label bovenaan de post, 1-3 woorden, of leeg'),
+  title: z.string().describe('De kop. Max ~7 woorden per regel; een \\n scheidt regels. Krachtig, geen punt aan het eind'),
+  body: z.string().describe('Bodytekst, 0-2 korte zinnen (max ~140 tekens). **woord** geeft nadruk in de accentkleur. Leeg als niet nodig'),
+  list: z.array(z.string()).describe('0-3 korte opsommingspunten, elk max ~6 woorden'),
+  quote: z.string().describe('Optioneel citaat of afsluitende regel, of leeg'),
+  badge: z.string().describe('Handle/bijschrift onderin, bijv. @merknaam, of leeg om de huidige te behouden'),
+  style: z.object({
+    theme: z.enum(THEMES),
+    align: z.enum(['left', 'center', 'right']),
+    position: z.enum(['top', 'middle', 'bottom']),
+    overlay: z.number().int().min(0).max(90).describe('Donkerte van de foto in %, 35-65 is gebruikelijk'),
+    textScale: z.number().int().min(70).max(145).describe('Tekstgrootte in %, 100 is normaal'),
+    accent: z.string().describe('Accentkleur als #rrggbb uit het merkpalet, of leeg om de huidige te behouden'),
+    textColor: z.string().describe('Tekstkleur als #rrggbb, of leeg om de huidige te behouden')
+  }),
+  why: z.string().describe('Eén zin, in de taal van de gebruiker: waarom deze variant past bij briefing en merk')
+});
+
+const ResponseSchema = z.object({
+  variants: z.array(VariantSchema).describe('1 tot 3 varianten'),
+  notes: z.string().describe('Optionele korte opmerking voor de gebruiker (bijv. ontbrekende info in de briefing), of leeg')
+});
+
+/* ---------------------------------------------------------------------------
+   Systeemprompt — stabiel, zodat prompt caching hem kan hergebruiken
+   ------------------------------------------------------------------------- */
+const SYSTEM_PROMPT = `Je bent een senior social-media copywriter en art director. Je schrijft Instagram-posts voor een tool genaamd Post Studio: één foto met daarop tekst in vaste onderdelen (label, kop, tekst, opsomming, citaat, handle) en een vormgevingssjabloon.
+
+## Wat je krijgt
+- Een briefing van de gebruiker: wat er gepost moet worden (actie, korting, aankondiging, aftellen, sfeer, ...). Dit is de opdracht.
+- Eventueel de huidige tekst in de tool (bij "verbeteren" is dit je uitgangspunt).
+- Eventueel een merkstijlgids in markdown, plus de kleuren/fonts die daaruit zijn gehaald.
+- De huidige instellingen (formaat, sjabloon, kleuren, handle).
+
+## Zo denk je
+1. Lees de stijlgids als een merkstrateeg: wie is het merk, wie is de doelgroep, wat is de tone of voice (formeel/informeel, je/u, speels/zakelijk), welke woorden en USP's gebruikt het merk, wat vermijdt het? Neem die stem exact over. Zonder stijlgids: kies een stem die past bij de briefing en blijf neutraal-professioneel.
+2. Begrijp wat de gebruiker écht wil bereiken (verkopen, informeren, aftellen, warmte overbrengen) en schrijf daarvoor. Een korting vraagt om helderheid en urgentie; een aftelling om spanning en een concrete datum; een sfeerpost om beeldend taalgebruik.
+3. Gebruik uitsluitend feiten uit de briefing en de stijlgids. Verzin nooit percentages, prijzen, data, voorwaarden of productnamen. Ontbreekt iets essentieels, schrijf dan eromheen en meld het in "notes".
+4. Instagram wordt op een telefoon gelezen: weinig woorden, veel kracht. Kop max ~7 woorden per regel (gebruik \\n voor een bewuste tweede regel), body max ~140 tekens, opsomming max 3 punten van max ~6 woorden. Liever minder onderdelen dan een volle post. Geen hashtags, geen emoji tenzij het merk dat duidelijk doet.
+5. Kies het sjabloon bewust:
+   - minimal: rustig, sfeer, tekst direct op de foto
+   - editorial: verzorgd, redactioneel, accentlijn langs de tekst
+   - panel: veel tekst of drukke foto, tekst op een licht vlak
+   - bold: aanbiedingen en kortingen, kop in een vol accentvlak
+   - band: donkere balk van rand tot rand, zakelijk en leesbaar
+   - quote: één uitspraak centraal, gecentreerd
+   Kies uitlijning en positie zodat de tekst logisch op een foto valt (onder is veilig). Verhoog overlay bij veel tekst op een foto.
+6. Kleuren: gebruik alleen hexwaarden uit het meegegeven merkpalet. Geen palet? Laat accent en textColor leeg zodat de huidige instelling blijft staan.
+7. Schrijf in de taal van de briefing (meestal Nederlands). Bij "verbeteren": behoud de boodschap en de feiten, maak het scherper en meer on-brand, lever precies 1 variant. Bij "genereren": lever 3 duidelijk verschillende invalshoeken (bijv. urgentie / voordeel / gevoel).
+
+Lever uitsluitend het gevraagde JSON-object.`;
+
+/* ---------------------------------------------------------------------------
+   Hulpfuncties
+   ------------------------------------------------------------------------- */
+const MIME = {
+  '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp', '.ico': 'image/x-icon', '.md': 'text/markdown; charset=utf-8', '.txt': 'text/plain; charset=utf-8',
+  '.otf': 'font/otf', '.ttf': 'font/ttf', '.woff': 'font/woff', '.woff2': 'font/woff2'
+};
+
+function json(res, status, body, extraHeaders) {
+  const headers = Object.assign({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }, extraHeaders || {});
+  res.writeHead(status, headers);
+  res.end(JSON.stringify(body));
 }
 
-// Render draait achter een proxy; nodig voor een correct req.ip (rate limiting)
-app.set('trust proxy', 1);
-app.disable('x-powered-by');
-
-/* ---------- CORS ---------- */
-const ALLOWED_ORIGINS = [
-  'https://jelger1.github.io',
-  'https://jelgersieler.nl',
-  'https://www.jelgersieler.nl',
-];
-// Lokale ontwikkeling: elke poort op localhost / 127.0.0.1 (Live Server, http-server, etc.)
-const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
-
-function isAllowedOrigin(origin) {
-  return ALLOWED_ORIGINS.includes(origin) || LOCAL_ORIGIN.test(origin);
-}
-
-app.use((req, res, next) => {
+function corsHeaders(req) {
   const origin = req.headers.origin;
-  if (origin && isAllowedOrigin(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-    res.header('Vary', 'Origin');
+  if (!origin) return {};
+  const host = req.headers.host;
+  const sameOrigin = origin === `http://${host}` || origin === `https://${host}`;
+  if (sameOrigin || ALLOWED_ORIGINS.includes('*') || ALLOWED_ORIGINS.includes(origin)) {
+    return {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Access-Code',
+      'Access-Control-Max-Age': '600',
+      'Vary': 'Origin'
+    };
   }
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.header('Access-Control-Max-Age', '86400');
-  if (req.method === 'OPTIONS') return res.sendStatus(204);
-  next();
-});
-
-app.use(express.json({ limit: '50kb' }));
-
-/* ---------- Static files (alleen lokaal) ----------
-   Lokaal serveert de server ook de portfolio zelf, zodat je op
-   http://localhost:3000 de site + chatbot kunt testen.
-   Op Render staat de site op GitHub Pages en is dit niet nodig. */
-if (!IS_RENDER) {
-  app.use('/server', (req, res) => res.sendStatus(404)); // server-map nooit serveren
-  app.use(express.static(path.join(__dirname, '..'), { dotfiles: 'ignore' }));
+  return null;   // origin niet toegestaan
 }
 
-/* ---------- Rate limiting (simpel, in-memory) ---------- */
-const hits = new Map();
-
-function rateLimit(req, res, next) {
-  const now = Date.now();
-  const key = req.ip || 'unknown';
-  let entry = hits.get(key);
-  if (!entry || now - entry.start > RATE_LIMIT.windowMs) {
-    entry = { start: now, count: 0 };
-    hits.set(key, entry);
-  }
-  entry.count += 1;
-  if (entry.count > RATE_LIMIT.max) {
-    return res.status(429).json({ error: 'Rustig aan 😅 Je stuurt te veel berichten. Probeer het over een minuutje opnieuw.' });
-  }
-  next();
-}
-
-// Oude entries opruimen
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of hits) {
-    if (now - entry.start > RATE_LIMIT.windowMs) hits.delete(key);
-  }
-}, RATE_LIMIT.windowMs).unref();
-
-/* ---------- System prompt ---------- */
-const SYSTEM_PROMPT = `Je bent Jelly-bot, de vriendelijke en behulpzame chatbot-assistent op het portfolio van Jelger. Je beantwoordt vragen in het Nederlands, tenzij de bezoeker in een andere taal schrijft.
-
-OVER JELGER:
-- Jelger is een maker die pas stopt als iets optimaal werkt — Designer, Developer & Maker met 2+ jaar intensieve ervaring en 7+ afgeronde projecten (van websites tot museum-exposities).
-- Hij ontwerpt en bouwt digitale en fysieke producten die niet alleen mooi zijn, maar ook écht werken.
-- Van concept tot code en 3D-print, met oog voor detail en een passie voor innovatie.
-- Hij gebruikt AI als slimme assistent om zijn workflow te verbeteren, maar de unieke afwerking en het menselijke design staan altijd centraal.
-- Zijn 3D-prints (BambuLab FDM) zijn eigen ontwerpen die o.a. bij het Discovery Museum en het Nationaal Mijn Museum liggen.
-
-DIENSTEN:
-1. UX Design — Intuïtieve ervaringen gebaseerd op onderzoek, testen en empathie.
-2. UI Design — Pixel-perfect visuele ontwerpen: knoppen, typografie, kleur, interactie. Consistent en schaalbaar.
-3. Product Design — Van strategie tot pixel, verantwoordelijk voor het hele digitale product. Business, gebruiker én techniek.
-4. Interaction Design — Micro-interacties, animaties en overgangen. De logica en flow tussen mens en machine.
-5. Front-end Development — Designs tot leven brengen in VS Code met HTML, CSS en JavaScript. Schrijft eigen code en gebruikt AI als slimme assistent voor een vlekkeloos resultaat.
-6. 3D Printing — Van uniek digitaal ontwerp naar fysiek product. Custom prints en prototypes voor musea, winkels en bedrijven.
-
-SKILLS & TOOLS:
-- Figma
-- Adobe Creative Cloud (Photoshop, Illustrator, InDesign)
-- Spline
-- Design Systems
-- User Research
-- Prototyping
-- 3D Modeling & Printing (BambuLab FDM)
-
-3D PRINT BEDRIJF — JelgerS3D:
-- Website: https://jelgers3d.nl
-- Jelger runt naast zijn designwerk een eigen 3D print bedrijf.
-- Diensten: custom ontwerpen (unieke 3D modellen op maat), prototyping (snel van idee naar model), kleine productieseries (productie op bestelling), snelle levering (korte doorlooptijden).
-- Professionele BambuLab FDM printers.
-- Producten liggen o.a. in het Discovery Museum, het Nationaal Mijn Museum en Boekhandel Deurenberg.
-- Materialen: PLA, PETG, TPU (FDM).
-- Levertijd is doorgaans 3-7 werkdagen, afhankelijk van complexiteit en drukte.
-- Voor prijzen en levertijden: neem contact op via het contactformulier of mail naar sielerjelger@gmail.com. Prijzen zijn afhankelijk van formaat, materiaal, complexiteit en aantal stuks.
-
-PROJECTEN:
-1. Brouwerij Rolduc (https://www.brouwerij-rolduc.nl) — Volledig informatieve website, webshop en reserveringssysteem in één. Van A tot Z ontwikkeld, inclusief afgeschermde bestelomgeving voor horeca. Sinds de lancering al 100+ reserveringen en orders.
-2. Heerlen: Miljarden kilo's steenkool — Wat deden miljarden kilo's steenkool met Heerlen? Een diepe duik in de geschiedenis van de stad, van de tijd vóór de ontdekking tot na de mijnsluiting. Interactieve ervaring op basis van historische data. Groepsproject; Jelger deed het visual design, de content en de volledige code.
-3. CodeMonster — Een doelgericht workshop-concept waarbij kinderen leren programmeren door kunst te maken. Van visual design tot platform en cursusmodel, uitvoerig getest door de doelgroep. Groepsproject; Jelger deed het design en de front-end.
-4. Sanctus Fusion (Dé Wieëtsjaf) — Volledige branding voor een exclusief bier: de Sanctus Fusion, een unieke volle IPA speciaal gebrouwen door Brouwerij Rolduc voor Dé Wieëtsjaf. Van logo-ontwerp tot posters, t-shirts, tafelkaarten en social media content. Alles volledig zelf ontworpen in Photoshop, Illustrator en InDesign.
-
-CONTACT:
-- E-mail: sielerjelger@gmail.com
-- LinkedIn: https://www.linkedin.com/in/jelger-sieler-9146a9306/
-- GitHub: https://github.com/Jelger1
-- Instagram (3D prints): https://www.instagram.com/jelgers3d/
-- Of via het contactformulier op de website (sectie "Contact").
-
-INSTRUCTIES:
-- Wees vriendelijk, behulpzaam en beknopt.
-- Als je iets niet zeker weet, verwijs naar het contactformulier of e-mail. Verzin geen feiten.
-- Geef geen exacte prijzen, maar verwijs naar contact voor een offerte op maat.
-- Je mag vragen beantwoorden over Jelger's werk, proces, 3D prints, diensten, etc.
-- Bij technische vragen over 3D printing mag je algemene kennis delen, maar verwijs voor specifieke projectvragen naar Jelger.
-- Houd antwoorden kort en to the point (max ~3-4 zinnen), tenzij meer detail gevraagd wordt.
-- Opmaak: gewone tekst, eventueel **vet** en korte lijstjes met "-". Geen koppen, tabellen of codeblokken.
-- Noem je een website, schrijf dan altijd de volledige URL inclusief https:// zodat hij klikbaar is.`;
-
-/* ---------- Helpers ---------- */
-function sanitizeMessages(input) {
-  if (!Array.isArray(input)) return null;
-
-  const cleaned = [];
-  for (const msg of input) {
-    if (!msg || typeof msg !== 'object') continue;
-    if (msg.role !== 'user' && msg.role !== 'assistant') continue; // geen system-injectie vanuit de client
-    if (typeof msg.content !== 'string') continue;
-    const content = msg.content.trim().slice(0, MAX_CONTENT_LENGTH);
-    if (!content) continue;
-    cleaned.push({ role: msg.role, content });
-  }
-
-  const trimmed = cleaned.slice(-MAX_MESSAGES);
-  if (!trimmed.length || trimmed[trimmed.length - 1].role !== 'user') return null;
-  return trimmed;
-}
-
-/* ---------- Routes ---------- */
-// Health check: handig voor Render én de frontend "wekt" hiermee de server
-app.get(['/', '/api/health'], (req, res) => {
-  res.json({
-    ok: true,
-    service: 'jellybot',
-    model: OPENAI_MODEL,
-    keyConfigured: Boolean(OPENAI_API_KEY),
-  });
-});
-
-app.post('/api/chat', rateLimit, async (req, res) => {
-  if (!OPENAI_API_KEY) {
-    return res.status(503).json({ error: 'Jelly-bot is nog niet geconfigureerd. Neem contact op via het contactformulier.' });
-  }
-
-  const messages = sanitizeMessages(req.body && req.body.messages);
-  if (!messages) {
-    return res.status(400).json({ error: 'Ongeldige request' });
-  }
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: OPENAI_MODEL,
-        messages: [{ role: 'system', content: SYSTEM_PROMPT }, ...messages],
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
-      signal: controller.signal,
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let size = 0;
+    const chunks = [];
+    req.on('data', chunk => {
+      size += chunk.length;
+      if (size > MAX_BODY) { reject(Object.assign(new Error('Verzoek te groot'), { status: 413 })); req.destroy(); return; }
+      chunks.push(chunk);
     });
+    req.on('end', () => {
+      try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')); }
+      catch (err) { reject(Object.assign(new Error('Ongeldige JSON'), { status: 400 })); }
+    });
+    req.on('error', reject);
+  });
+}
 
-    if (!response.ok) {
-      const errText = await response.text();
-      if (response.status === 401) {
-        console.error('OpenAI weigert de API key (401). Maak een nieuwe key aan op https://platform.openai.com/api-keys en zet hem in OPENAI_API_KEY.');
-      } else if (response.status === 429) {
-        console.error('OpenAI rate limit of tegoed op (429):', errText);
-      } else {
-        console.error(`OpenAI API error ${response.status}:`, errText);
-      }
-      const message = response.status === 429
-        ? 'Jelly-bot is even druk bezet. Probeer het zo opnieuw.'
-        : 'Er ging iets mis met de AI-service. Probeer het later opnieuw.';
-      return res.status(502).json({ error: message });
-    }
+/* Eenvoudige rate limiter per IP: RATE_LIMIT verzoeken per 10 minuten */
+const hits = new Map();
+function rateLimited(ip) {
+  const now = Date.now();
+  const window = 10 * 60 * 1000;
+  const list = (hits.get(ip) || []).filter(t => now - t < window);
+  list.push(now);
+  hits.set(ip, list);
+  if (hits.size > 5000) hits.clear();   // geheugen begrensd houden
+  return list.length > RATE_LIMIT;
+}
 
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content?.trim();
-    if (!reply) {
-      console.error('OpenAI gaf een leeg antwoord:', JSON.stringify(data).slice(0, 500));
-      return res.status(502).json({ error: 'Sorry, ik kon geen antwoord genereren.' });
-    }
+function clientIp(req) {
+  const fwd = req.headers['x-forwarded-for'];
+  return (typeof fwd === 'string' && fwd.split(',')[0].trim()) || req.socket.remoteAddress || 'onbekend';
+}
 
-    res.json({ reply });
-  } catch (err) {
-    if (err.name === 'AbortError') {
-      console.error(`OpenAI request timeout na ${OPENAI_TIMEOUT_MS}ms`);
-      return res.status(504).json({ error: 'De AI-service reageert niet. Probeer het later opnieuw.' });
-    }
-    console.error('Server error:', err);
-    res.status(500).json({ error: 'Serverfout. Probeer het later opnieuw.' });
-  } finally {
-    clearTimeout(timeout);
+function str(v, max) { return typeof v === 'string' ? v.slice(0, max || 4000) : ''; }
+
+/* ---------------------------------------------------------------------------
+   De AI-aanroep
+   ------------------------------------------------------------------------- */
+function buildUserMessage(p) {
+  const mode = p.mode === 'improve' ? 'improve' : 'generate';
+  const content = p.content || {};
+  const settings = p.settings || {};
+  const brand = (p.styleguide && p.styleguide.brand) || {};
+  const palette = Array.isArray(brand.colors) ? brand.colors.slice(0, 24) : [];
+
+  const lines = [];
+  lines.push(mode === 'improve'
+    ? '## Opdracht: VERBETER de huidige tekst (1 variant). Behoud boodschap en feiten; maak het scherper en on-brand.'
+    : '## Opdracht: MAAK een nieuwe post (3 verschillende varianten) op basis van de briefing.');
+
+  lines.push('', '## Briefing van de gebruiker', str(p.brief, 3000).trim() || '(geen briefing — leid het doel af uit de huidige tekst)');
+
+  const hasContent = ['label', 'title', 'body', 'list', 'quote'].some(k => str(content[k], 2000).trim());
+  if (hasContent) {
+    lines.push('', '## Huidige tekst in de tool');
+    if (str(content.label).trim()) lines.push('Label: ' + str(content.label, 200));
+    if (str(content.title).trim()) lines.push('Kop: ' + str(content.title, 400).replace(/\n/g, ' / '));
+    if (str(content.body).trim()) lines.push('Tekst: ' + str(content.body, 1200));
+    if (str(content.list).trim()) lines.push('Opsomming: ' + str(content.list, 600).split('\n').filter(Boolean).join(' | '));
+    if (str(content.quote).trim()) lines.push('Citaat: ' + str(content.quote, 400));
   }
+
+  lines.push('', '## Huidige instellingen');
+  lines.push(`Formaat: ${str(settings.ratio, 10) || '4:5'} · Sjabloon: ${str(settings.theme, 20) || 'editorial'} · Uitlijning: ${str(settings.align, 10) || 'left'} · Positie: ${str(settings.valign, 10) || 'bottom'}`);
+  lines.push(`Accentkleur: ${str(settings.accent, 10) || '-'} · Tekstkleur: ${str(settings.textColor, 10) || '-'} · Handle: ${str(settings.badge, 50) || '-'}`);
+  lines.push(`Er is ${settings.hasImage ? 'wel' : 'nog geen'} foto geplaatst.`);
+
+  if (palette.length || brand.name || brand.handle || (brand.fonts && (brand.fonts.heading || brand.fonts.body))) {
+    lines.push('', '## Uit de stijlgids gehaald');
+    if (brand.name) lines.push('Merknaam: ' + str(brand.name, 80));
+    if (brand.handle) lines.push('Handle: ' + str(brand.handle, 60));
+    if (brand.fonts && (brand.fonts.heading || brand.fonts.body)) lines.push(`Fonts: kop ${str(brand.fonts.heading, 60) || '-'} / tekst ${str(brand.fonts.body, 60) || '-'}`);
+    if (palette.length) lines.push('Merkpalet (gebruik alleen deze hexwaarden): ' + palette.map(c => `${str(c.hex, 9)}${c.role ? ' (' + str(c.role, 12) + ')' : ''}${c.name ? ' ' + str(c.name, 30) : ''}`).join(', '));
+  }
+
+  return lines.join('\n');
+}
+
+async function suggest(p) {
+  const styleguideText = str(p.styleguide && p.styleguide.text, MAX_STYLEGUIDE_CHARS);
+  const truncated = (p.styleguide && typeof p.styleguide.text === 'string' && p.styleguide.text.length > MAX_STYLEGUIDE_CHARS);
+
+  if (MOCK) {
+    return {
+      variants: [{
+        name: 'Testvariant', label: 'Alleen deze week', title: '40% korting op\nalle plaids',
+        body: 'Warm de winter in met **40% korting**. Geldig tot en met zondag.',
+        list: ['Gratis verzending', 'Voor 22:00 besteld, vandaag verzonden'], quote: '', badge: '',
+        style: { theme: 'bold', align: 'left', position: 'bottom', overlay: 55, textScale: 100, accent: '', textColor: '' },
+        why: 'Testmodus: geen echte AI-aanroep (AI_MOCK=1).'
+      }],
+      notes: truncated ? 'De stijlgids is ingekort tot de eerste 60.000 tekens.' : ''
+    };
+  }
+
+  if (!client) {
+    throw Object.assign(new Error('De server heeft geen ANTHROPIC_API_KEY. Zet die als omgevingsvariabele (op Render: Environment → Add Environment Variable).'), { status: 503 });
+  }
+
+  // Stabiele prefix eerst (systeemprompt), daarna de stijlgids met cache-markering:
+  // dezelfde stijlgids wordt bij elk verzoek hergebruikt en hoeft niet opnieuw
+  // te worden verwerkt.
+  const system = [{ type: 'text', text: SYSTEM_PROMPT }];
+  if (styleguideText.trim()) {
+    system.push({
+      type: 'text',
+      text: '## Merkstijlgids (markdown, door de gebruiker geüpload)\n\n' + styleguideText,
+      cache_control: { type: 'ephemeral' }
+    });
+  }
+
+  const response = await client.messages.parse({
+    model: MODEL,
+    max_tokens: 16000,
+    output_config: { effort: EFFORT, format: zodOutputFormat(ResponseSchema) },
+    system,
+    messages: [{ role: 'user', content: buildUserMessage(p) }]
+  });
+
+  if (response.stop_reason === 'refusal') {
+    throw Object.assign(new Error('Het model heeft dit verzoek geweigerd' + (response.stop_details && response.stop_details.explanation ? ': ' + response.stop_details.explanation : '.')), { status: 422 });
+  }
+  if (!response.parsed_output) {
+    throw Object.assign(new Error('Het model gaf geen geldig antwoord terug. Probeer het opnieuw.'), { status: 502 });
+  }
+
+  const out = response.parsed_output;
+  if (truncated) out.notes = [out.notes, 'De stijlgids is ingekort tot de eerste 60.000 tekens.'].filter(Boolean).join(' ');
+  out.usage = {
+    input: response.usage.input_tokens,
+    cached: response.usage.cache_read_input_tokens || 0,
+    output: response.usage.output_tokens,
+    model: response.model
+  };
+  return out;
+}
+
+/* Fouten van de SDK vertalen naar iets waar de gebruiker wat mee kan */
+function describeError(err) {
+  if (err && typeof err.status === 'number' && err.message && !(err instanceof Anthropic.APIError)) {
+    return { status: err.status, message: err.message };
+  }
+  if (err instanceof Anthropic.AuthenticationError) return { status: 502, message: 'De API-key op de server is ongeldig of verlopen.' };
+  if (err instanceof Anthropic.PermissionDeniedError) return { status: 502, message: 'De API-key heeft geen toegang tot dit model.' };
+  if (err instanceof Anthropic.RateLimitError) return { status: 429, message: 'De AI is even druk (rate limit). Probeer het over een minuut opnieuw.' };
+  if (err instanceof Anthropic.BadRequestError) return { status: 502, message: 'De AI-aanroep werd afgewezen: ' + err.message };
+  if (err instanceof Anthropic.APIConnectionError) return { status: 502, message: 'De server kan de AI niet bereiken. Probeer het later opnieuw.' };
+  if (err instanceof Anthropic.APIError) return { status: 502, message: `AI-fout (${err.status}): ${err.message}` };
+  return { status: 500, message: 'Onverwachte serverfout: ' + (err && err.message ? err.message : String(err)) };
+}
+
+/* ---------------------------------------------------------------------------
+   Statische bestanden (de tool zelf)
+   ------------------------------------------------------------------------- */
+function serveStatic(req, res) {
+  let urlPath;
+  try { urlPath = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (err) { urlPath = '/'; }
+  if (urlPath === '/') urlPath = '/index.html';
+
+  const filePath = path.normalize(path.join(ROOT, urlPath));
+  const rel = path.relative(ROOT, filePath);
+  const blocked = rel.startsWith('..') || rel.split(path.sep).some(seg => seg.startsWith('.') || seg === 'node_modules' || seg === 'server');
+  if (blocked) { res.writeHead(404); res.end('Not found'); return; }
+
+  fs.stat(filePath, (err, stat) => {
+    if (err || !stat.isFile()) { res.writeHead(404); res.end('Not found'); return; }
+    const ext = path.extname(filePath).toLowerCase();
+    res.writeHead(200, {
+      'Content-Type': MIME[ext] || 'application/octet-stream',
+      'Content-Length': stat.size,
+      'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=3600'
+    });
+    fs.createReadStream(filePath).pipe(res);
+  });
+}
+
+/* ---------------------------------------------------------------------------
+   Router
+   ------------------------------------------------------------------------- */
+const server = http.createServer(async (req, res) => {
+  const url = req.url.split('?')[0];
+
+  if (url.startsWith('/api/')) {
+    const cors = corsHeaders(req);
+    if (cors === null) { json(res, 403, { error: 'Deze origin mag de API niet gebruiken. Voeg hem toe aan ALLOWED_ORIGINS.' }); return; }
+    if (req.method === 'OPTIONS') { res.writeHead(204, cors); res.end(); return; }
+
+    if (url === '/api/health' && req.method === 'GET') {
+      json(res, 200, { ok: true, model: MODEL, hasKey: !!client || MOCK, needsCode: !!ACCESS_CODE, mock: MOCK }, cors);
+      return;
+    }
+
+    if (url === '/api/suggest' && req.method === 'POST') {
+      if (ACCESS_CODE && (req.headers['x-access-code'] || '') !== ACCESS_CODE) {
+        json(res, 401, { error: 'Toegangscode ontbreekt of klopt niet. Vul hem in bij AI-instellingen.' }, cors);
+        return;
+      }
+      if (rateLimited(clientIp(req))) {
+        json(res, 429, { error: 'Te veel verzoeken. Wacht een paar minuten en probeer het opnieuw.' }, cors);
+        return;
+      }
+      try {
+        const payload = await readBody(req);
+        const result = await suggest(payload);
+        json(res, 200, result, cors);
+      } catch (err) {
+        const d = describeError(err);
+        if (d.status >= 500) console.error('[suggest]', err);
+        json(res, d.status, { error: d.message }, cors);
+      }
+      return;
+    }
+
+    json(res, 404, { error: 'Onbekend API-pad' }, cors);
+    return;
+  }
+
+  if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); res.end(); return; }
+  serveStatic(req, res);
 });
 
-// Onbekende API-routes → JSON i.p.v. HTML
-app.use('/api', (req, res) => res.status(404).json({ error: 'Niet gevonden' }));
-
-// Foutafhandeling (bijv. ongeldige JSON in de body)
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
-  if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Ongeldige JSON' });
-  if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Bericht te groot' });
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Serverfout.' });
-});
-
-/* ---------- Start ---------- */
-app.listen(PORT, () => {
-  console.log(`Jelly-bot server draait op http://localhost:${PORT} (model: ${OPENAI_MODEL}, API key: ${OPENAI_API_KEY ? 'aanwezig' : 'ONTBREEKT'})`);
+server.listen(PORT, () => {
+  console.log(`Post Studio draait op http://localhost:${PORT}`);
+  console.log(`  model: ${MODEL} · effort: ${EFFORT} · key: ${client ? 'aanwezig' : 'ONTBREEKT'} · toegangscode: ${ACCESS_CODE ? 'aan' : 'uit'}${MOCK ? ' · MOCK-modus' : ''}`);
 });
