@@ -1,466 +1,401 @@
 /* ============================================
-   JELGER PORTFOLIO — MAIN.JS
+   JSDESIGN — MAIN.JS
+   Menu, actieve sectie, scroll-animaties, contactformulier (Supabase), e-mailadressen, "Mijn proces",
+   de lightbox van Sanctus Fusion en de paginaovergang. De 3D-scènes staan in src/3d/ (gebundeld als js/3d.js).
    ============================================ */
 
-/* ---------- LOADING SCREEN ---------- */
-(function initLoader() {
-  const loader = document.getElementById('loader');
-  const bar = document.getElementById('loader-bar');
-  if (!loader || !bar) return;
+const minderBeweging = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let progress = 0;
-
-  // Simulate progress while assets load
-  const interval = setInterval(() => {
-    // Slow down as we approach 90%
-    const increment = progress < 50 ? 3 : progress < 80 ? 1.5 : 0.4;
-    progress = Math.min(progress + increment, 90);
-    bar.style.width = progress + '%';
-  }, 60);
-
-  let finished = false;
-
-  function finishLoading() {
-    if (finished) return;
-    finished = true;
-    clearInterval(interval);
-    bar.style.width = '100%';
-    setTimeout(() => {
-      loader.classList.add('loader--hidden');
-      document.body.classList.remove('loading');
-    }, 400);
-  }
-
-  if (document.readyState === 'complete') {
-    finishLoading();
-  } else {
-    window.addEventListener('load', finishLoading);
-  }
-
-  // Fallback: nooit langer dan 6s wachten (bijv. als een extern script blijft hangen)
-  setTimeout(finishLoading, 6000);
-})();
-
-/* ---------- RENDER LOOP HELPER (gebruikt door scenes.js & model-viewer.js) ----------
-   Draait requestAnimationFrame alleen zolang de container in beeld is.
-   Scheelt flink wat GPU/CPU (en accu) op pagina's met meerdere 3D-scenes. */
-function createRenderLoop(container, frame) {
-  let visible = true;
-  let running = false;
-
-  function loop() {
-    if (!visible) {
-      running = false;
-      return;
-    }
-    requestAnimationFrame(loop);
-    frame();
-  }
-
-  function start() {
-    if (running) return;
-    running = true;
-    requestAnimationFrame(loop);
-  }
-
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      if (visible) start();
-    }, { threshold: 0 });
-    observer.observe(container);
-  }
-
-  start();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  initMobileMenu();
-  initScrollAnimations();
-  initNavbarScroll();
+document.addEventListener('DOMContentLoaded', function () {
+  initMenu();
+  initActieveSectie();
+  initReveal();
+  initMail();
   initContactForm();
-  setFooterYear();
-  initSanctusCarousel();
-  initProcessToggles();
+  initProcess();
+  initLightbox();
+  initTransition();
+  document.querySelectorAll('[data-jaar]').forEach(function (el) { el.textContent = String(new Date().getFullYear()); });
 });
 
-/* ---------- MOBILE MENU ---------- */
-function initMobileMenu() {
-  const hamburger = document.getElementById('hamburger');
-  const mobileMenu = document.getElementById('mobile-menu');
-  const mobileLinks = mobileMenu?.querySelectorAll('a');
-  const iconOpen = document.getElementById('icon-menu');
-  const iconClose = document.getElementById('icon-close');
+/* ---------- MENU (mobiel) ---------- */
+function initMenu() {
+  const toggle = document.querySelector('.nav-toggle');
+  const nav = document.getElementById('main-nav');
+  if (!toggle || !nav) return;
 
-  if (!hamburger || !mobileMenu) return;
+  function zet(open) {
+    nav.classList.toggle('is-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Menu sluiten' : 'Menu');
+  }
 
-  hamburger.addEventListener('click', () => {
-    const isOpen = mobileMenu.classList.toggle('open');
-    hamburger.setAttribute('aria-expanded', isOpen.toString());
-
-    if (iconOpen && iconClose) {
-      iconOpen.style.display = isOpen ? 'none' : 'block';
-      iconClose.style.display = isOpen ? 'block' : 'none';
-    }
+  toggle.addEventListener('click', function () { zet(!nav.classList.contains('is-open')); });
+  nav.addEventListener('click', function (e) { if (e.target.closest('a')) zet(false); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && nav.classList.contains('is-open')) { zet(false); toggle.focus(); }
   });
+  document.addEventListener('click', function (e) {
+    if (nav.classList.contains('is-open') && !e.target.closest('.site-header')) zet(false);
+  });
+}
 
-  // Close menu when clicking a link
-  mobileLinks?.forEach(link => {
-    link.addEventListener('click', () => {
-      mobileMenu.classList.remove('open');
-      hamburger.setAttribute('aria-expanded', 'false');
-      if (iconOpen && iconClose) {
-        iconOpen.style.display = 'block';
-        iconClose.style.display = 'none';
-      }
+/* ---------- ACTIEVE SECTIE IN HET MENU ---------- */
+function initActieveSectie() {
+  const links = Array.from(document.querySelectorAll('.main-nav a[href^="#"]'));
+  // getElementById: een id als "3d-print" is geen geldige CSS-selector
+  const secties = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); }).filter(Boolean);
+  if (!secties.length || !('IntersectionObserver' in window)) return;
+
+  const zichtbaar = new Map();
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) { zichtbaar.set(entry.target.id, entry.isIntersecting ? entry.intersectionRatio : 0); });
+    // De sectie die het meest in beeld is (binnen de middelste strook van het scherm)
+    let beste = null, hoogste = 0;
+    zichtbaar.forEach(function (ratio, id) { if (ratio > hoogste) { hoogste = ratio; beste = id; } });
+    links.forEach(function (a) {
+      if (a.getAttribute('href') === '#' + beste) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    });
+  }, { rootMargin: '-35% 0px -45% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] });
+  secties.forEach(function (s) { observer.observe(s); });
+}
+
+/* ---------- SCROLL-ANIMATIES ---------- */
+function initReveal() {
+  const items = document.querySelectorAll('.reveal');
+  if (minderBeweging || !('IntersectionObserver' in window)) {
+    items.forEach(function (el) { el.classList.add('is-revealed'); });
+    return;
+  }
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-revealed');
+      observer.unobserve(entry.target);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  items.forEach(function (el, i) {
+    // Kaarten naast elkaar komen kort na elkaar binnen
+    if (el.parentElement && el.parentElement.classList.contains('services')) el.style.transitionDelay = (i % 4) * 90 + 'ms';
+    observer.observe(el);
+  });
+}
+
+/* ---------- E-MAILADRES ----------
+   Het adres staat gecodeerd in de HTML (data-mail: achterstevoren, in base64), zodat robots die het web afstruinen
+   het niet vinden. Hier wordt het weer een gewone, klikbare link. Zonder JavaScript gaat de link naar het formulier. */
+function decodeMail(code) {
+  try { return atob(code || '').split('').reverse().join(''); } catch (e) { return ''; }
+}
+
+function initMail() {
+  document.querySelectorAll('a[data-mail]').forEach(function (link) {
+    const adres = decodeMail(link.dataset.mail);
+    if (!/^[^\s@]+@[^\s@]+$/.test(adres)) return;
+    link.href = 'mailto:' + adres;
+    if (link.hasAttribute('data-mail-icon')) return;
+    const tekst = link.querySelector('span') || link;
+    tekst.textContent = adres;
+  });
+}
+
+/* ---------- CONTACTFORMULIER ----------
+   Gaat naar de Supabase-functie "formulier" (dezelfde als op jelgers3d.nl, met site: 'portfolio'). Die controleert
+   alles, houdt spam tegen, slaat het bericht op en mailt een bevestiging naar de afzender en een overzicht naar mij.
+   De invultijd gaat mee: robots versturen binnen een seconde, mensen niet. */
+const BACKEND = document.documentElement.dataset.backend || '';
+
+function verstuur(gegevens) {
+  if (!BACKEND) return Promise.reject(new Error('Versturen lukt nu niet. Mail me gerust direct.'));
+  return fetch(BACKEND, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(Object.assign({ site: 'portfolio', pagina: location.href, duur: Math.round(performance.now()) }, gegevens))
+  }).catch(function () {
+    throw new Error('Geen verbinding. Controleer je internet en probeer het opnieuw.');
+  }).then(function (response) {
+    return response.json().catch(function () { return {}; }).then(function (antwoord) {
+      if (!response.ok || !antwoord.ok) throw new Error(antwoord.fout || 'Er ging iets mis bij het versturen. Probeer het opnieuw.');
+      return antwoord;
     });
   });
 }
 
-/* ---------- SCROLL ANIMATIONS (Intersection Observer) ---------- */
-function initScrollAnimations() {
-  const elements = document.querySelectorAll('.fade-in, .fade-in-left, .fade-in-right');
+// Meldingen per veld, onder het veld
+const REGELS = {
+  name: function (v) { return v.length < 2 ? 'Vul je naam in.' : ''; },
+  email: function (v, input) { return !v ? 'Vul je e-mailadres in.' : (input.validity.typeMismatch || !/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(v) ? 'Dit e-mailadres lijkt niet te kloppen.' : ''); },
+  message: function (v) { return v.length < 2 ? 'Vul je bericht in.' : ''; },
+  privacy: function (v, input) { return input.checked ? '' : 'Vink dit aan om je bericht te kunnen versturen.'; }
+};
 
-  if (!elements.length) return;
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target); // Only animate once
-      }
-    });
-  }, {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-  });
-
-  elements.forEach(el => observer.observe(el));
+function foutElement(input) {
+  const id = input.getAttribute('aria-describedby');
+  let el = id ? document.getElementById(id) : null;
+  if (!el) {
+    el = document.createElement('p');
+    el.className = 'field-error';
+    el.id = input.id + '-error';
+    el.hidden = true;
+    input.setAttribute('aria-describedby', el.id);
+    input.insertAdjacentElement('afterend', el);
+  }
+  return el;
 }
 
-/* ---------- NAVBAR SCROLL EFFECT ---------- */
-function initNavbarScroll() {
-  const navbar = document.querySelector('.navbar');
-  if (!navbar) return;
-
-  window.addEventListener('scroll', () => {
-    const currentScroll = window.scrollY;
-
-    if (currentScroll > 100) {
-      navbar.style.borderBottomColor = 'rgba(42, 45, 53, 0.8)';
-    } else {
-      navbar.style.borderBottomColor = '';
-    }
-  }, { passive: true });
+function controleerVeld(input) {
+  const regel = REGELS[input.name];
+  if (!regel) return true;
+  const melding = regel(input.value.trim(), input);
+  const el = foutElement(input);
+  el.textContent = melding;
+  el.hidden = !melding;
+  input.setAttribute('aria-invalid', melding ? 'true' : 'false');
+  return !melding;
 }
 
-/* ---------- CONTACT FORM (Web3Forms) ---------- */
 function initContactForm() {
   const form = document.getElementById('contact-form');
-  const feedback = document.getElementById('form-feedback');
-  const submitBtn = document.getElementById('submit-btn');
-  const submitLabel = submitBtn ? submitBtn.querySelector('span') : null;
   if (!form) return;
+  const melding = document.getElementById('form-msg');
+  const knop = form.querySelector('button[type="submit"]');
+  const knopHtml = knop.innerHTML;
 
-  form.addEventListener('submit', async (e) => {
+  function zeg(html, ok) {
+    melding.innerHTML = html;
+    melding.className = 'form-msg ' + (ok ? 'form-msg-success' : 'form-msg-error');
+  }
+
+  // Controleer een veld als je het verlaat; na een fout ook tijdens het typen, zodat de melding meteen verdwijnt
+  form.addEventListener('focusout', function (e) {
+    if (REGELS[e.target.name] && e.target.value && e.target.type !== 'checkbox') controleerVeld(e.target);
+  });
+  form.addEventListener('input', function (e) {
+    if (e.target.getAttribute('aria-invalid') === 'true') controleerVeld(e.target);
+  });
+  form.addEventListener('change', function (e) {
+    if (e.target.type === 'checkbox' && REGELS[e.target.name]) controleerVeld(e.target);
+  });
+
+  form.addEventListener('submit', function (e) {
     e.preventDefault();
+    let eerste = null;
+    ['name', 'email', 'message', 'privacy'].forEach(function (naam) {
+      const veld = form.elements[naam];
+      if (veld && !controleerVeld(veld) && !eerste) eerste = veld;
+    });
+    if (eerste) { eerste.focus(); return; }
 
-    // Basic client-side validation
-    const name = form.elements.name.value.trim();
-    const email = form.elements.email.value.trim();
-    const message = form.elements.message.value.trim();
+    knop.disabled = true;
+    knop.textContent = 'Versturen...';
+    melding.textContent = '';
 
-    if (!name || !email || !message) {
-      showFeedback('Vul alle velden in.', 'error');
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showFeedback('Vul een geldig e-mailadres in.', 'error');
-      return;
-    }
-
-    // Disable button while sending
-    if (submitBtn) submitBtn.disabled = true;
-    if (submitLabel) submitLabel.textContent = 'Versturen...';
-
-    try {
-      const formData = new FormData(form);
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        showFeedback('Bericht verstuurd! Ik neem zo snel mogelijk contact op.', 'success');
-        form.reset();
-      } else {
-        showFeedback('Er ging iets mis. Probeer het opnieuw of mail direct.', 'error');
-      }
-    } catch (err) {
-      showFeedback('Netwerkfout. Controleer je internetverbinding en probeer opnieuw.', 'error');
-    } finally {
-      if (submitBtn) submitBtn.disabled = false;
-      if (submitLabel) submitLabel.textContent = 'Verstuur bericht';
-    }
+    verstuur({
+      soort: 'contact',
+      naam: form.elements.name.value.trim(),
+      email: form.elements.email.value.trim(),
+      bericht: form.elements.message.value.trim(),
+      akkoord: form.elements.privacy.checked,
+      botcheck: form.elements.botcheck.checked
+    }).then(function (antwoord) {
+      zeg('Bedankt, je bericht is verstuurd!' + (antwoord.mail ? ' Je krijgt een bevestiging per mail.' : '') + ' Ik neem snel contact met je op.', true);
+      form.reset();
+      form.querySelectorAll('[aria-invalid]').forEach(function (el) { el.removeAttribute('aria-invalid'); });
+    }).catch(function (fout) {
+      const mail = document.querySelector('.contact-links a[href^="mailto:"]');
+      zeg(escapeHtml(fout.message) + (mail ? ' Of <a href="' + mail.getAttribute('href') + '">mail me direct</a>.' : ''), false);
+    }).finally(function () {
+      knop.disabled = false;
+      knop.innerHTML = knopHtml;
+    });
   });
-
-  function showFeedback(msg, type) {
-    if (!feedback) return;
-    feedback.textContent = msg;
-    feedback.hidden = false;
-    feedback.className = `form-feedback form-feedback--${type}`;
-
-    // Auto-hide success after 6s
-    if (type === 'success') {
-      setTimeout(() => { feedback.hidden = true; }, 6000);
-    }
-  }
 }
 
-/* ---------- FOOTER YEAR ---------- */
-function setFooterYear() {
-  const yearEl = document.getElementById('footer-year');
-  if (yearEl) {
-    yearEl.textContent = new Date().getFullYear().toString();
-  }
+function escapeHtml(tekst) {
+  return String(tekst).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
 }
 
-/* ---------- SMOOTH SCROLL for anchor links (snap-compatible) ---------- */
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function (e) {
-    const targetId = this.getAttribute('href');
-    if (!targetId || targetId === '#') return;
+/* ---------- DIALOGEN ----------
+   Native <dialog>: focus blijft erin, Escape sluit. Klik op de achtergrond sluit ook. */
+function sluitBijAchtergrond(dialog, sluit) {
+  dialog.addEventListener('click', function (e) {
+    if (e.target === dialog) sluit();
+  });
+  dialog.querySelectorAll('[data-sluit]').forEach(function (knop) { knop.addEventListener('click', sluit); });
+}
 
-    const target = document.querySelector(targetId);
-    if (target) {
-      e.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+/* ---------- MIJN PROCES ---------- */
+const PROCES = {
+  rolduc: {
+    titel: 'Brouwerij Rolduc',
+    url: 'https://www.brouwerij-rolduc.nl',
+    urlLabel: 'brouwerij-rolduc.nl',
+    team: false,
+    tekst: [
+      'Dit project heb ik volledig zelfstandig ontworpen en gecodeerd. Vanaf het eerste gesprek met de opdrachtgever heb ik het hele traject doorlopen: van concept tot een werkend eindproduct.',
+      'Gedurende het proces ben ik veel in contact geweest met de opdrachtgever. Niet alleen om te leveren wat hij voor ogen had, maar ook om actief mee te denken over wat er miste, wat beter kon en welke kansen hij misschien over het hoofd zag. Door tools zoals Web3Forms in te zetten, heb ik ervoor gezorgd dat de site niet alleen mooi is, maar ook optimaal functioneert.'
+    ],
+    skills: ['HTML & CSS', 'JavaScript', 'Web3Forms', 'UI Design', 'Klantcontact']
+  },
+  heerlen: {
+    titel: 'Heerlen: miljarden kilo’s steenkool',
+    url: 'https://mia-mms-2526.github.io/team03/',
+    urlLabel: 'Interactieve story',
+    team: true,
+    tekst: [
+      'Dit project heb ik samen met een team gerealiseerd. Naast mijn visuele rol heb ik ook de volledige website geprogrammeerd. Ik heb de visuele stijl ontworpen, meegedacht over de opbouw en structuur van de video, en alles technisch tot leven gebracht in code.',
+      'Daarnaast was ik verantwoordelijk voor het bedenken en schrijven van de content. Het was een fijne samenwerking waarbij iedereen zijn eigen expertise inbracht en we samen tot een sterk eindresultaat kwamen.'
+    ],
+    skills: ['HTML & CSS', 'JavaScript', 'Visual Design', 'Content Writing', 'Video Concept', 'Storytelling']
+  },
+  codemonster: {
+    titel: 'CodeMonster',
+    url: 'https://mia-dp-2425.github.io/team01/index.html',
+    urlLabel: 'CodeMonster',
+    team: true,
+    tekst: [
+      'Binnen dit groepsproject was ik verantwoordelijk voor het volledige design en de front-end development. Ik heb de website ontworpen en gecodeerd, en ervoor gezorgd dat alles goed werkte, inclusief het responsive design.',
+      'Van wireframes tot het uiteindelijke werkende platform: ik zorgde ervoor dat de visuele identiteit en de technische uitvoering naadloos op elkaar aansloten.'
+    ],
+    skills: ['UI Design', 'HTML & CSS', 'JavaScript', 'Responsive Design']
+  },
+  sanctus: {
+    titel: 'Sanctus Fusion',
+    afbeelding: 'assets/img/sanctus-biertap-v2-1200.webp',
+    urlLabel: 'Biertap-mockup',
+    team: false,
+    tekst: [
+      'Bij dit project heb ik veel creatieve vrijheid gekregen, maar ik heb vooral in het begin regelmatig afgestemd met de opdrachtgever om te zorgen dat de richting klopte. Die basis gaf me vertrouwen om het concept verder uit te werken.',
+      'Ik heb veel in Illustrator en Photoshop gewerkt. Toen het bier nog niet gebrouwen was, ben ik onderzoek gaan doen naar de smaakprofielen van de hopsoorten die in het bier verwerkt zouden worden. Dat vormde de basis voor mijn ontwerp. Daarnaast heb ik goed gekeken naar hoe andere merken hun IPA-bieren visueel positioneren en heb ik de huisstijl van Brouwerij Rolduc en Dé Wieëtsjaf gecombineerd tot een eigen, herkenbare stijl.'
+    ],
+    skills: ['Illustrator', 'Photoshop', 'InDesign', 'Branding', 'Onderzoek']
+  }
+};
+
+function initProcess() {
+  const dialog = document.getElementById('process-modal');
+  if (!dialog || typeof dialog.showModal !== 'function') return;
+  const frame = dialog.querySelector('.process-frame');
+  const plaatje = dialog.querySelector('.process-image');
+  const badge = dialog.querySelector('[data-process-badge]');
+
+  function open(sleutel) {
+    const p = PROCES[sleutel];
+    if (!p) return;
+    badge.className = 'process-badge' + (p.team ? ' is-team' : '');
+    badge.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-' + (p.team ? 'team' : 'solo') + '"/></svg>' + (p.team ? 'Groepsproject' : 'Zelfstandig project');
+    dialog.querySelector('#process-title').textContent = p.titel;
+    dialog.querySelector('[data-process-url]').textContent = p.urlLabel;
+    dialog.querySelector('[data-process-text]').innerHTML = p.tekst.map(function (t) { return '<p>' + escapeHtml(t) + '</p>'; }).join('');
+    dialog.querySelector('[data-process-skills]').innerHTML = p.skills.map(function (s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('');
+    if (p.url) {
+      frame.hidden = false;
+      frame.src = p.url;
+      plaatje.hidden = true;
+    } else {
+      frame.hidden = true;
+      frame.removeAttribute('src');
+      plaatje.src = p.afbeelding;
+      plaatje.alt = p.titel + ': ' + p.urlLabel.toLowerCase();
+      plaatje.hidden = false;
     }
-  });
-});
-
-/* ---------- SANCTUS FUSION CAROUSEL & LIGHTBOX ---------- */
-function initSanctusCarousel() {
-  const preview = document.getElementById('sanctus-preview');
-  const lightbox = document.getElementById('sanctus-lightbox');
-  if (!preview || !lightbox) return;
-
-  const images = [
-    { src: 'assets/POSTER-SANCTUS-FUSION.jpg', alt: 'Sanctus Fusion poster ontwerp' },
-    { src: 'assets/Beer-Tap-Mockup.jpg', alt: 'Sanctus Fusion biertap mockup' },
-    { src: 'assets/Can-Mockup-Sanctus-Fusion-Info.jpg', alt: 'Sanctus Fusion blikje mockup' },
-    { src: 'assets/Sanctus-Fusion-Merchandise-T-Shirt.jpg', alt: 'Sanctus Fusion t-shirt wit' },
-    { src: 'assets/Sanctus-Fusion-Merchandise-T-Shirt-Zwart.jpg', alt: 'Sanctus Fusion t-shirt zwart' }
-  ];
-
-  const lbImg = lightbox.querySelector('.sanctus__lightbox-img img');
-  const lbCounter = lightbox.querySelector('.sanctus__lightbox-counter');
-  const closeBtn = lightbox.querySelector('.sanctus__lightbox-close');
-  const prevBtn = lightbox.querySelector('.sanctus__lightbox-btn--prev');
-  const nextBtn = lightbox.querySelector('.sanctus__lightbox-btn--next');
-  let currentIndex = 0;
-
-  function showImage(index) {
-    // Infinite loop
-    if (index < 0) index = images.length - 1;
-    if (index >= images.length) index = 0;
-    currentIndex = index;
-    lbImg.src = images[currentIndex].src;
-    lbImg.alt = images[currentIndex].alt;
-    lbCounter.textContent = (currentIndex + 1) + ' / ' + images.length;
+    dialog.showModal();
   }
 
-  function openLightbox() {
-    showImage(0);
-    lightbox.classList.add('active');
-    lightbox.setAttribute('aria-hidden', 'false');
+  function sluit() { dialog.close(); }
+  dialog.addEventListener('close', function () {
+    // Het voorbeeld stoppen, anders blijft de site op de achtergrond draaien
+    setTimeout(function () { if (!dialog.open) frame.removeAttribute('src'); }, 300);
+  });
+  sluitBijAchtergrond(dialog, sluit);
+  document.querySelectorAll('[data-process]').forEach(function (knop) {
+    knop.addEventListener('click', function () { open(knop.dataset.process); });
+  });
+}
+
+/* ---------- SANCTUS FUSION: LIGHTBOX ---------- */
+const BEELDEN = [
+  { src: 'assets/img/sanctus-poster-1600.webp', alt: 'Poster van Sanctus Fusion', tekst: 'Poster' },
+  { src: 'assets/img/sanctus-biertap-1600.webp', alt: 'Biertap met het Sanctus Fusion-logo', tekst: 'Biertap' },
+  { src: 'assets/img/sanctus-blik-1600.webp', alt: 'Blikje Sanctus Fusion met productinformatie', tekst: 'Blikje' },
+  { src: 'assets/img/sanctus-shirt-wit-1600.webp', alt: 'Wit t-shirt met de Sanctus Fusion-print', tekst: 'Merchandise, wit' },
+  { src: 'assets/img/sanctus-shirt-zwart-1600.webp', alt: 'Zwart t-shirt met de Sanctus Fusion-print', tekst: 'Merchandise, zwart' }
+];
+
+function initLightbox() {
+  const dialog = document.getElementById('lightbox');
+  if (!dialog || typeof dialog.showModal !== 'function') return;
+  const img = dialog.querySelector('.lightbox-img');
+  const tekst = dialog.querySelector('[data-lightbox-tekst]');
+  const teller = dialog.querySelector('[data-lightbox-teller]');
+  let huidig = 0;
+
+  function toon(index) {
+    huidig = (index + BEELDEN.length) % BEELDEN.length;
+    const b = BEELDEN[huidig];
+    img.src = b.src;
+    img.alt = b.alt;
+    tekst.textContent = b.tekst;
+    teller.textContent = (huidig + 1) + ' / ' + BEELDEN.length;
+    // Het volgende beeld alvast ophalen
+    new Image().src = BEELDEN[(huidig + 1) % BEELDEN.length].src;
   }
 
-  function closeLightbox() {
-    lightbox.classList.remove('active');
-    lightbox.setAttribute('aria-hidden', 'true');
-  }
-
-  // Open on preview click
-  preview.addEventListener('click', openLightbox);
-  preview.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(); }
+  document.querySelectorAll('[data-lightbox]').forEach(function (knop) {
+    knop.addEventListener('click', function () {
+      toon(Number(knop.dataset.lightbox) || 0);
+      dialog.showModal();
+    });
+  });
+  dialog.querySelectorAll('[data-stap]').forEach(function (knop) {
+    knop.addEventListener('click', function () { toon(huidig + Number(knop.dataset.stap)); });
+  });
+  sluitBijAchtergrond(dialog, function () { dialog.close(); });
+  dialog.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') toon(huidig - 1);
+    if (e.key === 'ArrowRight') toon(huidig + 1);
   });
 
-  // Navigation
-  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showImage(currentIndex - 1); });
-  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showImage(currentIndex + 1); });
-
-  // Close
-  closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeLightbox(); });
-  lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) closeLightbox();
-  });
-
-  // Keyboard
-  document.addEventListener('keydown', (e) => {
-    if (!lightbox.classList.contains('active')) return;
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowLeft') showImage(currentIndex - 1);
-    if (e.key === 'ArrowRight') showImage(currentIndex + 1);
-  });
-
-  // Touch swipe in lightbox
-  let startX = 0;
-  lightbox.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
-  lightbox.addEventListener('touchend', (e) => {
-    const diff = startX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      diff > 0 ? showImage(currentIndex + 1) : showImage(currentIndex - 1);
-    }
+  // Vegen op een touchscreen
+  let startX = null;
+  dialog.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+  dialog.addEventListener('touchend', function (e) {
+    if (startX === null) return;
+    const verschil = startX - e.changedTouches[0].clientX;
+    if (Math.abs(verschil) > 50) toon(huidig + (verschil > 0 ? 1 : -1));
+    startX = null;
   }, { passive: true });
 }
 
-/* ---------- PROJECT PROCESS MODAL ---------- */
-function initProcessToggles() {
-  const modal = document.getElementById('process-modal');
-  if (!modal) return;
-
-  const backdrop = modal.querySelector('.process-modal__backdrop');
-  const closeBtn = modal.querySelector('.process-modal__close');
-  const browserUrl = modal.querySelector('.process-modal__browser-url');
-  const browserBody = modal.querySelector('.process-modal__browser-body');
-  const iframe = modal.querySelector('.process-modal__iframe');
-  const badgeEl = modal.querySelector('.process-modal__badge');
-  const titleEl = modal.querySelector('.process-modal__title');
-  const textEl = modal.querySelector('.process-modal__text');
-  const skillsEl = modal.querySelector('.process-modal__skills');
-
-  // Process data per project
-  const processData = {
-    rolduc: {
-      title: 'Brouwerij Rolduc',
-      url: 'https://www.brouwerij-rolduc.nl',
-      urlLabel: 'brouwerij-rolduc.nl',
-      badge: 'solo',
-      badgeLabel: 'Zelfstandig project',
-      text: [
-        'Dit project heb ik volledig zelfstandig ontworpen en gecodeerd. Vanaf het eerste gesprek met de opdrachtgever heb ik het hele traject doorlopen: van concept tot een werkend eindproduct.',
-        'Gedurende het proces ben ik veel in contact geweest met de opdrachtgever. Niet alleen om te leveren wat hij voor ogen had, maar ook om actief mee te denken over wat er miste, wat beter kon en welke kansen hij misschien over het hoofd zag. Door tools zoals Web3Forms in te zetten, heb ik ervoor gezorgd dat de site niet alleen mooi is, maar ook optimaal functioneert.'
-      ],
-      skills: ['HTML & CSS', 'JavaScript', 'Web3Forms', 'UI Design', 'Klantcontact']
-    },
-    heerlen: {
-      title: 'Heerlen: Miljarden kilo\u2019s steenkool',
-      url: 'https://mia-mms-2526.github.io/team03/',
-      urlLabel: 'Interactieve Story',
-      badge: 'team',
-      badgeLabel: 'Groepsproject',
-      text: [
-        'Dit project heb ik samen met een team gerealiseerd. Naast mijn visuele rol heb ik ook de volledige website geprogrammeerd. Ik heb de visuele stijl ontworpen, meegedacht over de opbouw en structuur van de video, en alles technisch tot leven gebracht in code.',
-        'Daarnaast was ik verantwoordelijk voor het bedenken en schrijven van de content. Het was een fijne samenwerking waarbij iedereen zijn eigen expertise inbracht en we samen tot een sterk eindresultaat kwamen.'
-      ],
-      skills: ['HTML & CSS', 'JavaScript', 'Visual Design', 'Content Writing', 'Video Concept', 'Storytelling']
-    },
-    codemonster: {
-      title: 'CodeMonster',
-      url: 'https://mia-dp-2425.github.io/team01/index.html',
-      urlLabel: 'CodeMonster Platform',
-      badge: 'team',
-      badgeLabel: 'Groepsproject',
-      text: [
-        'Binnen dit groepsproject was ik verantwoordelijk voor het volledige design en de front-end development. Ik heb de website ontworpen en gecodeerd, en ervoor gezorgd dat alles goed werkte \u2014 inclusief het responsive design.',
-        'Van wireframes tot het uiteindelijke werkende platform: ik zorgde ervoor dat de visuele identiteit en de technische uitvoering naadloos op elkaar aansloten.'
-      ],
-      skills: ['UI Design', 'HTML & CSS', 'JavaScript', 'Responsive Design']
-    },
-    sanctus: {
-      title: 'Sanctus Fusion',
-      url: null,
-      urlLabel: null,
-      previewImage: 'assets/Beer-Tap-Mockup-V2.jpg',
-      badge: 'solo',
-      badgeLabel: 'Zelfstandig project',
-      text: [
-        'Bij dit project heb ik veel creatieve vrijheid gekregen, maar ik heb vooral in het begin regelmatig afgestemd met de opdrachtgever om te zorgen dat de richting klopte. Die basis gaf me vertrouwen om het concept verder uit te werken.',
-        'Ik heb veel in Illustrator en Photoshop gewerkt. Toen het bier nog niet gebrouwen was, ben ik onderzoek gaan doen naar de smaakprofielen van de hopsoorten die in het bier verwerkt zouden worden. Dat vormde de basis voor mijn ontwerp. Daarnaast heb ik goed gekeken naar hoe andere merken hun IPA-bieren visueel positioneren en heb ik de huisstijl van Brouwerij Rolduc en D\u00e9 Wie\u00ebtsjaf gecombineerd tot een eigen, herkenbare stijl.'
-      ],
-      skills: ['Illustrator', 'Photoshop', 'InDesign', 'Branding', 'Onderzoek']
-    }
-  };
-
-  const soloIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
-  const teamIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
-
-  function openModal(key) {
-    const data = processData[key];
-    if (!data) return;
-
-    // Set badge
-    badgeEl.className = 'process-modal__badge process-modal__badge--' + data.badge;
-    badgeEl.innerHTML = (data.badge === 'solo' ? soloIcon : teamIcon) + ' ' + data.badgeLabel;
-
-    // Set title
-    titleEl.textContent = data.title;
-
-    // Set text
-    textEl.innerHTML = data.text.map(function(p) { return '<p>' + p + '</p>'; }).join('');
-
-    // Set skills
-    skillsEl.innerHTML = data.skills.map(function(s) { return '<span>' + s + '</span>'; }).join('');
-
-    // Set preview (iframe or image)
-    const existingImg = browserBody.querySelector('.process-modal__image-preview');
-    if (existingImg) existingImg.remove();
-
-    if (data.url) {
-      browserUrl.textContent = data.urlLabel;
-      iframe.src = data.url;
-      iframe.style.display = '';
-    } else {
-      browserUrl.textContent = 'Preview';
-      iframe.style.display = 'none';
-      iframe.src = 'about:blank';
-
-      if (data.previewImage) {
-        const img = document.createElement('img');
-        img.src = data.previewImage;
-        img.alt = data.title + ' preview';
-        img.className = 'process-modal__image-preview';
-        browserBody.appendChild(img);
-      }
-    }
-
-    // Show modal
-    modal.classList.add('active');
-    modal.setAttribute('aria-hidden', 'false');
-    document.body.classList.add('modal-open');
-  }
-
-  function closeModal() {
-    modal.classList.remove('active');
-    modal.setAttribute('aria-hidden', 'true');
-    document.body.classList.remove('modal-open');
-
-    // Clear iframe after transition
-    setTimeout(function() {
-      iframe.src = 'about:blank';
-    }, 400);
-  }
-
-  // Attach toggle buttons
-  document.querySelectorAll('.project__process-toggle').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      const key = btn.getAttribute('data-process');
-      openModal(key);
-    });
+/* ---------- PAGINAOVERGANG ----------
+   Klik naar een andere pagina van de site (bv. de privacyverklaring): drie banden schuiven schuin over het scherm en
+   het JS-teken valt in elkaar. Pas dan gaat de browser naar de nieuwe pagina, die achter hetzelfde doek begint (zie het
+   scriptje in de <head>) en het weer wegschuift. Uitzonderen: data-no-transition op de link. */
+function initTransition() {
+  const html = document.documentElement;
+  ['pc-arriving', 'pc-intro'].forEach(function (klasse) {
+    if (html.classList.contains(klasse)) setTimeout(function () { html.classList.remove(klasse); }, 2000);
   });
+  // Terug met de knop van de browser: de vorige pagina kan nog met het doek ervoor in het geheugen staan
+  window.addEventListener('pageshow', function (e) { if (e.persisted) html.classList.remove('pc-leaving', 'pc-arriving', 'pc-intro'); });
+  if (minderBeweging || !document.querySelector('.page-curtain')) return;
 
-  // Close handlers
-  closeBtn.addEventListener('click', closeModal);
-  backdrop.addEventListener('click', closeModal);
-
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal.classList.contains('active')) {
-      closeModal();
-    }
+  document.addEventListener('click', function (e) {
+    const link = e.target.closest('a[href]');
+    if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if ((link.target && link.target !== '_self') || link.hasAttribute('download') || link.hasAttribute('data-no-transition')) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin || (url.pathname === location.pathname && url.search === location.search)) return;
+    if (!/(\/|\.html)$/.test(url.pathname)) return;
+    e.preventDefault();
+    try { sessionStorage.setItem('pc', String(Date.now())); } catch (err) { /* privévenster: dan alleen het vertrek */ }
+    html.classList.remove('pc-arriving', 'pc-intro');
+    html.classList.add('pc-leaving');
+    let weg = false;
+    function ga() { if (!weg) { weg = true; location.href = url.href; } }
+    const laatste = document.querySelector('.pc-band-3');
+    if (laatste) laatste.addEventListener('animationend', ga, { once: true });
+    setTimeout(ga, 1100);
   });
 }

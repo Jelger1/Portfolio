@@ -14,9 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const messagesEl = document.getElementById('jellybot-messages');
   const suggestionsEl = document.getElementById('jellybot-suggestions');
   const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
-  const statusEl = chatWindow ? chatWindow.querySelector('.jellybot__status') : null;
-  const iconChat = toggle ? toggle.querySelector('.jellybot__icon-chat') : null;
-  const iconClose = toggle ? toggle.querySelector('.jellybot__icon-close') : null;
+  const statusEl = chatWindow ? chatWindow.querySelector('.jellybot-status') : null;
 
   if (!toggle || !chatWindow || !form || !input || !messagesEl) return;
 
@@ -42,15 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch(API_BASE + '/api/health').catch(() => { /* niet erg, server wordt wakker */ });
   }
 
-  /* ---------- Open / dicht ---------- */
+  /* ---------- Open / dicht (de iconen wisselen via CSS op aria-expanded) ---------- */
   function setOpen(open) {
     chatWindow.hidden = !open;
     toggle.setAttribute('aria-expanded', String(open));
-    toggle.setAttribute('aria-label', open ? 'Sluit chat' : 'Open chat');
-    if (iconChat && iconClose) {
-      iconChat.style.display = open ? 'none' : 'block';
-      iconClose.style.display = open ? 'block' : 'none';
-    }
+    toggle.setAttribute('aria-label', open ? 'Sluit chat' : 'Chat met Jelly-bot');
     if (open) {
       warmUpServer();
       input.focus();
@@ -58,17 +52,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   toggle.addEventListener('click', () => setOpen(chatWindow.hidden));
-  toggle.addEventListener('mouseenter', warmUpServer, { once: true });
-  if (closeBtn) closeBtn.addEventListener('click', () => setOpen(false));
+  toggle.addEventListener('pointerenter', warmUpServer, { once: true });
+  if (closeBtn) closeBtn.addEventListener('click', () => { setOpen(false); toggle.focus(); });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !chatWindow.hidden) setOpen(false);
+    if (e.key === 'Escape' && !chatWindow.hidden && !document.querySelector('dialog[open]')) {
+      setOpen(false);
+      toggle.focus();
+    }
   });
 
   /* ---------- Invoer ---------- */
   if (suggestionsEl) {
     suggestionsEl.addEventListener('click', (e) => {
-      const btn = e.target.closest('.jellybot__suggestion');
+      const btn = e.target.closest('.jellybot-suggestion');
       if (!btn || !btn.dataset.msg) return;
       sendMessage(btn.dataset.msg);
     });
@@ -83,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function hideSuggestions() {
-    if (suggestionsEl) suggestionsEl.style.display = 'none';
+    if (suggestionsEl) suggestionsEl.hidden = true;
   }
 
   function setSending(sending) {
@@ -104,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function addMessage(role, content) {
     const div = document.createElement('div');
-    div.className = 'jellybot__msg jellybot__msg--' + (role === 'user' ? 'user' : 'bot');
+    div.className = 'jellybot-msg jellybot-msg-' + (role === 'user' ? 'user' : 'bot');
 
     if (role === 'user') {
       div.textContent = content;
@@ -119,8 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function showTyping() {
     if (document.getElementById('jellybot-typing')) return;
     const div = document.createElement('div');
-    div.className = 'jellybot__typing';
+    div.className = 'jellybot-typing';
     div.id = 'jellybot-typing';
+    div.setAttribute('aria-label', 'Jelly-bot typt');
     div.innerHTML = '<span></span><span></span><span></span>';
     messagesEl.appendChild(div);
     scrollToBottom();
