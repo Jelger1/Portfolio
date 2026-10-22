@@ -27,6 +27,10 @@ const FOTOS = [
 	{ bron: 'Sanctus-Fusion-Merchandise-T-Shirt.jpg', naam: 'sanctus-shirt-wit', breedtes: [1600] },
 	{ bron: 'Sanctus-Fusion-Merchandise-T-Shirt-Zwart.jpg', naam: 'sanctus-shirt-zwart', breedtes: [1600] },
 	{ bron: 'Jelger-Pic.jpg', naam: 'jelger', breedtes: [160, 800], vierkant: true },
+	// Screenshots van de projectsites (1440x900) voor de voorbeelden in de lijst; vervang de JPG als een site verandert
+	{ bron: 'screens/rolduc.jpg', naam: 'project-rolduc', breedtes: [700, 1400] },
+	{ bron: 'screens/heerlen.jpg', naam: 'project-heerlen', breedtes: [700, 1400] },
+	{ bron: 'screens/codemonster.jpg', naam: 'project-codemonster', breedtes: [700, 1400] },
 	{ bron: 'Jelly-Bot.png', naam: 'jelly-bot', breedtes: [96], vierkant: true }
 ];
 

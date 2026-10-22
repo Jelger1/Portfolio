@@ -1,8 +1,9 @@
 # JSdesign — jelgersieler.nl
 
 Portfolio van Jelger Sieler onder de naam **JSdesign**, in dezelfde huisstijl als [jelgers3d.nl](https://jelgers3d.nl):
-het JS-teken, Stevie Sans en Space Grotesk, en de kleuren Electric Aqua `#03BCCA`, Deep Teal `#029AA6`,
-Neon Raspberry `#F10067`, Misty Sage `#F3FFFD` en Midnight Slate `#080A0D`. Met **Jelly-bot**, een chatbot die vragen
+het JS-teken, de typografie "optie 2B" (zie hieronder) en de kleuren Electric Aqua `#03BCCA`, Deep Teal `#029AA6`,
+Neon Raspberry `#F10067`, Misty Sage `#F3FFFD` en Midnight Slate `#080A0D`. De vaste richtlijn is `HUISSTIJL.md` in de
+repo van JelgerS3D; verandert daar iets, neem het dan hier ook over. Met **Jelly-bot**, een chatbot die vragen
 beantwoordt over Jelgers werk, en een contactformulier dat via Supabase loopt.
 
 ## Structuur
@@ -19,7 +20,7 @@ beantwoordt over Jelgers werk, en een contactformulier dat via Supabase loopt.
 ├── src/3d/             # De 3D-scènes (Three.js): het JS-teken in de hero en de 3D-scan in "Over mij"
 ├── assets/
 │   ├── brand/          # Logo's, favicon, deelafbeelding (og-image.png)
-│   ├── fonts/          # Stevie Sans, Space Grotesk en Syne als WOFF2
+│   ├── fonts/          # Saira, Instrument Serif, DM Sans, JetBrains Mono en Stevie Sans als WOFF2
 │   ├── img/            # GEBOUWD: kleine WebP-versies van de foto's
 │   ├── 3d/scan.bin     # GEBOUWD uit assets/Jelgerin3d.glb
 │   └── mail/logo.png   # Het JS-teken voor de bevestigingsmails (Gmail toont geen SVG)
@@ -58,6 +59,17 @@ bezoekers meteen de nieuwe versie.
   buurt komt.
 - Beide scènes renderen alleen als ze in beeld zijn en respecteren "minder beweging". Zonder WebGL staat er in de hero
   het JS-teken als plaatje en bij de scan een foto.
+
+### Projectvoorbeelden
+
+In de projectlijst staan **screenshots** van de sites (bron: `assets/screens/*.jpg`, 1440×900; de build maakt er WebP's
+van). Op een computer laadt een klik op het voorbeeld de echte site op die plek; op een telefoon opent een tik de site.
+"Mijn proces" toont dezelfde screenshot.
+
+Bewust geen ingesloten sites die vanzelf laden: Brouwerij Rolduc zet bij het laden de focus op de knop van het
+leeftijdsscherm, en dan springt de pagina tijdens het scrollen naar dat voorbeeld (vooral op een telefoon) en verdwijnt
+de focus uit het contactformulier. Verandert een site, maak dan een nieuwe screenshot van 1440×900, zet hem als JPG in
+`assets/screens/` en draai `npm run build`.
 
 ## Contactformulier (Supabase)
 
@@ -132,7 +144,18 @@ Zorg dat er tegoed op het OpenAI-account staat (Billing), anders geeft OpenAI ee
 > **Let op:** deel een API key nooit in chats, screenshots of commits. Is een key toch gelekt, trek hem dan direct in
 > op de OpenAI-site en maak een nieuwe aan.
 
-## Lettertype Stevie Sans
+## Lettertypen
 
-Stevie Sans (koppen en logo) is een betaald font van Typefolio; voor gebruik op een website is een weblicentie nodig.
-Dezelfde bestanden staan op jelgers3d.nl. Ontbreken ze, dan valt de site terug op Syne.
+Gelijk aan jelgers3d.nl ("optie 2B"); declaraties en regels bovenaan `css/style.css`:
+
+| Rol | Lettertype | Waar |
+| --- | --- | --- |
+| Koppen | Saira Expanded ExtraBold | h1/h2 op 125% breedte, kleinere koppen 112%, op een telefoon smaller |
+| Accent | Instrument Serif Italic | het woord in het merkverloop in een kop (`<span class="highlight">`), spaarzaam |
+| Tekst | DM Sans | lopende tekst en knoppen, minimaal 16 px |
+| Labels | JetBrains Mono | bovenkopjes, tags, de lopende band, adresbalk van de voorbeelden |
+| Logo-naam | Stevie Sans Medium | alleen "DESIGN" naast het teken |
+
+Saira, Instrument Serif, DM Sans en JetBrains Mono zijn gratis (SIL Open Font License). Stevie Sans is een betaald font
+van Typefolio; voor gebruik op een website is een weblicentie nodig. De bevestigingsmails van het portfolio laden Saira,
+DM Sans en Stevie Sans van deze site.

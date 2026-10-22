@@ -42,13 +42,13 @@
       } catch (e) {}
     })();
   </script>
-  <link rel="preload" href="assets/fonts/stevie-sans-bold.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/style.css?v=7da470e2">
+  <link rel="preload" href="assets/fonts/saira-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/style.css?v=35a29f50">
   <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
 
-  <script type="module" src="js/3d.js?v=8c1fdf80"></script>
-  <script src="js/main.js?v=d9125515" defer></script>
+  <script type="module" src="js/3d.js?v=a5893dd9"></script>
+  <script src="js/main.js?v=fe27086d" defer></script>
   <script src="js/chatbot.js?v=e6885d8d" defer></script>
 
   <script type="application/ld+json">
@@ -130,7 +130,7 @@
         <a href="#over">Over mij</a>
         <a href="#diensten">Diensten</a>
         <a href="#projecten">Projecten</a>
-        <a href="#3d-print">3D-print</a>
+        <a href="#printen">3D-print</a>
         <a href="#contact">Contact</a>
       </nav>
       <a class="btn primary btn-sm header-cta" href="#contact">Samenwerken</a>
@@ -262,8 +262,9 @@
           <div class="project-visual reveal">
             <div class="browser">
               <div class="browser-bar" aria-hidden="true"><span class="browser-dots"><span></span><span></span><span></span></span><span class="browser-url">brouwerij-rolduc.nl</span></div>
-              <div class="browser-body">
-                <iframe src="https://www.brouwerij-rolduc.nl" class="browser-frame" title="Voorbeeld van de website van Brouwerij Rolduc" loading="lazy" tabindex="-1"></iframe>
+              <!-- Screenshot; op een computer laadt js/main.js bij aanwijzen de echte site eroverheen (zie initLiveVoorbeelden) -->
+              <div class="browser-body" data-live="https://www.brouwerij-rolduc.nl" data-live-titel="Live voorbeeld van de website van Brouwerij Rolduc">
+                <img class="browser-shot" src="assets/img/project-rolduc-700.webp" srcset="assets/img/project-rolduc-700.webp 700w, assets/img/project-rolduc-1400.webp 1400w" sizes="(max-width: 900px) 92vw, 700px" alt="De homepage van Brouwerij Rolduc" width="1400" height="875" loading="lazy" decoding="async">
                 <a href="https://www.brouwerij-rolduc.nl" class="browser-overlay" target="_blank" rel="noopener noreferrer" aria-label="Bekijk de website van Brouwerij Rolduc (nieuw venster)"></a>
               </div>
             </div>
@@ -284,8 +285,8 @@
           <div class="project-visual reveal">
             <div class="browser">
               <div class="browser-bar" aria-hidden="true"><span class="browser-dots"><span></span><span></span><span></span></span><span class="browser-url">Interactieve story</span></div>
-              <div class="browser-body">
-                <iframe src="https://mia-mms-2526.github.io/team03/" class="browser-frame" title="Voorbeeld van de interactieve story over Heerlen" loading="lazy" tabindex="-1"></iframe>
+              <div class="browser-body" data-live="https://mia-mms-2526.github.io/team03/" data-live-titel="Live voorbeeld van de interactieve story over Heerlen">
+                <img class="browser-shot" src="assets/img/project-heerlen-700.webp" srcset="assets/img/project-heerlen-700.webp 700w, assets/img/project-heerlen-1400.webp 1400w" sizes="(max-width: 900px) 92vw, 700px" alt="Het startscherm van de interactieve story over Heerlen" width="1400" height="875" loading="lazy" decoding="async">
                 <a href="https://mia-mms-2526.github.io/team03/" class="browser-overlay" target="_blank" rel="noopener noreferrer" aria-label="Bekijk de interactieve story over Heerlen (nieuw venster)"></a>
               </div>
             </div>
@@ -306,15 +307,15 @@
           <div class="project-visual reveal">
             <div class="browser">
               <div class="browser-bar" aria-hidden="true"><span class="browser-dots"><span></span><span></span><span></span></span><span class="browser-url">CodeMonster</span></div>
-              <div class="browser-body">
-                <iframe src="https://mia-dp-2425.github.io/team01/index.html" class="browser-frame" title="Voorbeeld van het CodeMonster-platform" loading="lazy" tabindex="-1"></iframe>
+              <div class="browser-body" data-live="https://mia-dp-2425.github.io/team01/index.html" data-live-titel="Live voorbeeld van het CodeMonster-platform">
+                <img class="browser-shot" src="assets/img/project-codemonster-700.webp" srcset="assets/img/project-codemonster-700.webp 700w, assets/img/project-codemonster-1400.webp 1400w" sizes="(max-width: 900px) 92vw, 700px" alt="De homepage van het CodeMonster-platform" width="1400" height="875" loading="lazy" decoding="async">
                 <a href="https://mia-dp-2425.github.io/team01/index.html" class="browser-overlay" target="_blank" rel="noopener noreferrer" aria-label="Bekijk het CodeMonster-platform (nieuw venster)"></a>
               </div>
             </div>
           </div>
           <div class="project-text reveal">
             <p class="project-meta"><span class="project-nr" aria-hidden="true">03</span> Educatie · Platform</p>
-            <h3 id="codemonster-title">Code<span class="highlight">Monster</span></h3>
+            <h3 id="codemonster-title">CodeMonster</h3>
             <p>Een doelgericht workshopconcept waarbij kinderen leren programmeren door kunst te maken. Van visual design tot een platform en cursusmodel dat uitvoerig is getest met de doelgroep.</p>
             <ul class="tags"><li>p5.js</li><li>Educatie</li><li>Workshop</li></ul>
             <p class="project-actions">
@@ -350,7 +351,7 @@
     </section>
 
     <!-- ========== 3D-PRINT ========== -->
-    <section id="3d-print" class="section section-print" aria-labelledby="print-title">
+    <section id="printen" class="section section-print" aria-labelledby="print-title">
       <div class="container">
         <div class="print-cta reveal">
           <div class="print-text">
@@ -435,9 +436,9 @@
               <label for="cf-bericht">Bericht</label>
               <textarea id="cf-bericht" name="message" rows="5" placeholder="Vertel me over je project..." required maxlength="5000"></textarea>
             </div>
-            <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" aria-hidden="true">
             <div class="form-consent">
-              <label class="form-consent-label" for="cf-privacy">
+              <label class="form-consent-label">
                 <input type="checkbox" id="cf-privacy" name="privacy" value="akkoord" required aria-describedby="cf-privacy-error">
                 <span>Ik ga akkoord met de verwerking van mijn gegevens zoals beschreven in de <a href="privacy.html" target="_blank" rel="noopener">privacyverklaring</a>. <span aria-hidden="true">*</span></span>
               </label>
@@ -462,7 +463,7 @@
         <a href="#over">Over mij</a>
         <a href="#diensten">Diensten</a>
         <a href="#projecten">Projecten</a>
-        <a href="#3d-print">3D-print</a>
+        <a href="#printen">3D-print</a>
         <a href="#contact">Contact</a>
         <a href="privacy.html">Privacyverklaring</a>
       </nav>
@@ -483,13 +484,12 @@
       <div class="process-preview">
         <div class="browser-bar" aria-hidden="true"><span class="browser-dots"><span></span><span></span><span></span></span><span class="browser-url" data-process-url></span></div>
         <div class="process-body">
-          <iframe class="process-frame" title="Voorbeeld van het project" sandbox="allow-scripts allow-same-origin" tabindex="-1"></iframe>
-          <img class="process-image" alt="" hidden>
+          <img class="process-image" src="assets/img/project-rolduc-1400.webp" alt="" width="1400" height="875" loading="lazy" decoding="async">
         </div>
       </div>
       <div class="process-info">
         <p class="process-badge" data-process-badge></p>
-        <h2 class="process-title" id="process-title"></h2>
+        <h2 class="process-title" id="process-title">Mijn proces</h2>
         <div class="process-text" data-process-text></div>
         <ul class="tags process-skills" data-process-skills></ul>
       </div>
@@ -497,11 +497,12 @@
   </dialog>
 
   <!-- ========== SANCTUS FUSION IN BEELD ========== -->
-  <dialog class="lightbox" id="lightbox" aria-label="Sanctus Fusion in beeld">
+  <dialog class="lightbox" id="lightbox" aria-labelledby="lightbox-title">
+    <h2 class="sr-only" id="lightbox-title">Sanctus Fusion in beeld</h2>
     <button type="button" class="dialog-close" data-sluit aria-label="Sluiten"><svg class="icon" aria-hidden="true"><use href="#i-sluit"/></svg></button>
     <button type="button" class="lightbox-nav lightbox-prev" data-stap="-1" aria-label="Vorige"><svg class="icon" aria-hidden="true"><use href="#i-links"/></svg></button>
     <figure class="lightbox-figure">
-      <img alt="" class="lightbox-img">
+      <img class="lightbox-img" src="assets/img/sanctus-poster-1600.webp" alt="Poster van Sanctus Fusion" loading="lazy" decoding="async">
       <figcaption class="lightbox-caption"><span data-lightbox-tekst></span> <span class="lightbox-count" data-lightbox-teller></span></figcaption>
     </figure>
     <button type="button" class="lightbox-nav lightbox-next" data-stap="1" aria-label="Volgende"><svg class="icon" aria-hidden="true"><use href="#i-rechts"/></svg></button>

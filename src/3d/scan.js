@@ -123,6 +123,10 @@ function bouw(container, ruw) {
 		lokaal.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
 	}, { passive: true });
 	container.addEventListener('pointerleave', function () { lokaal.set(9999, 9999); });
+	// Een vinger is na het loslaten weg (of de browser neemt het over om te scrollen): niet op die plek blijven duwen
+	function vingerWeg(e) { if (e.pointerType !== 'mouse') lokaal.set(9999, 9999); }
+	window.addEventListener('pointerup', vingerWeg);
+	window.addEventListener('pointercancel', vingerWeg);
 
 	// Opbouw start als de scan echt in beeld is
 	let opbouw = minderBeweging ? 1 : 0;
@@ -134,6 +138,7 @@ function bouw(container, ruw) {
 	// Klik: uit elkaar spatten en weer samenkomen
 	const snelheden = new Float32Array(aantal * 3);
 	let spat = -1;
+	let inRust = false; // alle deeltjes op hun plek en geen muis in de buurt
 	container.addEventListener('click', function () {
 		if (opbouw < 1 || spat >= 0) return;
 		spat = 0;
@@ -188,27 +193,34 @@ function bouw(container, ruw) {
 			}
 			posities.needsUpdate = true;
 		} else if (opbouw >= 1) {
-			// Deeltjes wijken voor de muis en veren terug
+			// Deeltjes wijken voor de muis en veren terug. Is de muis niet in de buurt en ligt alles stil, dan valt er
+			// niets te rekenen (scheelt 26.000 deeltjes per frame, en dus accu op een telefoon).
 			raycaster.setFromCamera(lokaal, camera);
-			const geraakt = raycaster.ray.intersectPlane(vlak, punt);
+			const geraakt = Math.abs(lokaal.x) <= 1.2 && Math.abs(lokaal.y) <= 1.2 && raycaster.ray.intersectPlane(vlak, punt);
 			const m = geraakt ? punt.applyMatrix4(inverse.copy(groep.matrixWorld).invert()) : null;
-			const r2 = STRAAL * STRAAL;
-			const k = Math.min(1, dt * TERUG);
-			for (let i = 0; i < p.length; i += 3) {
-				const x = vorm[i], y = vorm[i + 1], z = vorm[i + 2];
-				if (m) {
-					const dx = x - m.x, dy = y - m.y, dz = z - m.z;
-					const d2 = dx * dx + dy * dy + dz * dz;
-					if (d2 < r2 && d2 > 0.0001) {
-						const d = Math.sqrt(d2);
-						const f = (1 - d / STRAAL) * DUW / d;
-						p[i] = x + dx * f; p[i + 1] = y + dy * f; p[i + 2] = z + dz * f;
-						continue;
+			if (m || !inRust) {
+				const r2 = STRAAL * STRAAL;
+				const k = Math.min(1, dt * TERUG);
+				let afwijking = 0;
+				for (let i = 0; i < p.length; i += 3) {
+					const x = vorm[i], y = vorm[i + 1], z = vorm[i + 2];
+					if (m) {
+						const dx = x - m.x, dy = y - m.y, dz = z - m.z;
+						const d2 = dx * dx + dy * dy + dz * dz;
+						if (d2 < r2 && d2 > 0.0001) {
+							const d = Math.sqrt(d2);
+							const f = (1 - d / STRAAL) * DUW / d;
+							p[i] = x + dx * f; p[i + 1] = y + dy * f; p[i + 2] = z + dz * f;
+							afwijking = 1;
+							continue;
+						}
 					}
+					p[i] += (x - p[i]) * k; p[i + 1] += (y - p[i + 1]) * k; p[i + 2] += (z - p[i + 2]) * k;
+					afwijking = Math.max(afwijking, Math.abs(x - p[i]) + Math.abs(y - p[i + 1]) + Math.abs(z - p[i + 2]));
 				}
-				p[i] += (x - p[i]) * k; p[i + 1] += (y - p[i + 1]) * k; p[i + 2] += (z - p[i + 2]) * k;
+				inRust = !m && afwijking < 0.0005;
+				posities.needsUpdate = true;
 			}
-			posities.needsUpdate = true;
 		}
 		renderer.render(scene, camera);
 	}

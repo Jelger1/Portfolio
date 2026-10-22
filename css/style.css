@@ -6,14 +6,46 @@
    ============================================ */
 
 /* ---------- LETTERTYPEN ----------
-   Op de eigen server (assets/fonts): sneller, en bezoekers laden niets bij Google. Space Grotesk en Syne zijn
-   variabel (SIL Open Font License). Stevie Sans (koppen) is een betaald font van Typefolio: weblicentie nodig. */
+   Typografie "optie 2B", gelijk aan jelgers3d.nl (de richtlijn staat in HUISSTIJL.md van die repo):
+   Saira Expanded voor koppen (de J en S hebben het skelet van het JS-teken), Instrument Serif Italic als klassiek
+   accent, DM Sans voor tekst, JetBrains Mono voor labels, Stevie Sans alleen voor de naam bij het logo.
+   Op de eigen server (assets/fonts). Saira, DM Sans, Instrument Serif en JetBrains Mono: SIL Open Font License;
+   Saira en DM Sans zijn variabel (bij Saira ook de breedte: font-stretch 100%–125%). Stevie Sans is betaald
+   (Typefolio, weblicentie). De bevestigingsmails van het portfolio laden Saira, DM Sans en Stevie Sans ook van hier. */
 @font-face {
-  font-family: 'Stevie Sans';
+  font-family: 'Saira';
   font-style: normal;
   font-weight: 600 900;
+  font-stretch: 100% 125%;
   font-display: swap;
-  src: url('../assets/fonts/stevie-sans-bold.woff2') format('woff2');
+  src: url('../assets/fonts/saira-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('../assets/fonts/dm-sans-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('../assets/fonts/instrument-serif-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url('../assets/fonts/jetbrains-mono-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -23,25 +55,6 @@
   font-weight: 400 599;
   font-display: swap;
   src: url('../assets/fonts/stevie-sans-medium.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 300 700;
-  font-display: swap;
-  src: url('../assets/fonts/space-grotesk-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
-@font-face {
-  font-family: 'Syne';
-  font-style: normal;
-  font-weight: 400 800;
-  font-display: swap;
-  src: url('../assets/fonts/syne-latin.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* ---------- TOKENS ----------
@@ -60,8 +73,12 @@
   --brand-glow-strong: rgba(3, 188, 202, 0.3);
   --raspberry-glow: rgba(241, 0, 103, 0.07);
 
-  --font-display: 'Stevie Sans', 'Syne', sans-serif;
-  --font-body: 'Space Grotesk', 'Segoe UI', sans-serif;
+  /* Koppen, klassiek accent, tekst, labels, naam bij het logo */
+  --font-display: 'Saira', 'Arial Narrow', sans-serif;
+  --font-accent: 'Instrument Serif', Georgia, serif;
+  --font-body: 'DM Sans', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, monospace;
+  --font-logo: 'Stevie Sans', 'DM Sans', sans-serif;
 
   --max-width: 1280px;
   --nav-height: 64px;
@@ -135,15 +152,82 @@ body::after {
 h1, h2, h3, h4 {
   font-family: var(--font-display);
   font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: -0.025em;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
   color: var(--sage);
   margin: 0;
 }
 
 h2 {
-  font-size: clamp(2rem, 4.2vw, 3rem);
+  font-size: clamp(1.85rem, 3.7vw, 2.65rem);
   margin-bottom: 1.25rem;
+}
+
+/* Typografie "optie 2B" (zoals jelgers3d.nl): grote koppen in Saira Expanded ExtraBold op 125% breedte, kleinere
+   koppen op 112%. Het accentwoord in een kop is de klassieke Instrument Serif Italic in het merkverloop; labels staan
+   in JetBrains Mono. Op een telefoon worden de koppen smaller, zodat lange Nederlandse woorden passen. */
+h1,
+h2,
+.project-text h3 {
+  font-weight: 800;
+  font-stretch: 125%;
+}
+
+h3,
+h4,
+.service-nr,
+.project-nr,
+.stat-value,
+.sanctus-overlay span,
+.features strong,
+.print-gallery span,
+.contact-person strong,
+.jellybot-name {
+  font-stretch: 112%;
+}
+
+:is(h1, h2, h3) .highlight {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-weight: 400;
+  font-stretch: normal;
+  font-size: 1.14em;
+  letter-spacing: -0.01em;
+  padding-right: 0.08em;
+}
+
+.kicker,
+.project-meta,
+.stat-label,
+.skills-title,
+.hero-hint,
+.scan-hint,
+.footer-tagline,
+.marquee-track span,
+.sanctus-overlay small,
+.lightbox-count {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.tags li,
+.browser-url {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 600px) {
+  h1,
+  h2,
+  .project-text h3 {
+    font-stretch: 110%;
+  }
+
+  h3,
+  h4 {
+    font-stretch: 100%;
+  }
 }
 
 h3 {
@@ -278,9 +362,7 @@ button {
   align-items: center;
   gap: 0.6rem;
   font-size: 0.74rem;
-  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.18em;
   color: var(--brand);
   margin: 0 0 0.9rem;
 }
@@ -481,10 +563,10 @@ button {
 }
 
 .brand-name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.3rem;
-  letter-spacing: 0.04em;
+  font-family: var(--font-logo);
+  font-weight: 500;
+  font-size: 1.25rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
@@ -517,7 +599,7 @@ button {
   background: var(--raspberry);
   clip-path: var(--js-blok);
   transform: translateX(-50%) scale(0);
-  transition: transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+  transition: transform 0.3s ease-in-out;
 }
 
 .main-nav a:hover,
@@ -639,10 +721,14 @@ button {
 }
 
 .hero-text h1 {
-  font-size: clamp(2.6rem, 5.6vw, 4.6rem);
-  line-height: 1.02;
-  letter-spacing: -0.035em;
+  font-size: clamp(2.3rem, 4.6vw, 3.9rem);
+  line-height: 1.06;
   margin-bottom: 1.5rem;
+}
+
+/* "écht werkt" hoort bij elkaar */
+.hero-text h1 .highlight {
+  white-space: nowrap;
 }
 
 .hero-lead {
@@ -728,7 +814,7 @@ button {
   opacity: 0;
   transition: opacity 0.6s ease;
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: pan-y pinch-zoom;
 }
 
 .hero-canvas canvas.is-dragging {
@@ -774,7 +860,6 @@ button {
   bottom: 0.25rem;
   margin: 0;
   font-size: 0.72rem;
-  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--fg-muted);
   opacity: 0;
@@ -824,9 +909,7 @@ button {
   align-items: center;
   gap: 2.25rem;
   padding-right: 2.25rem;
-  font-family: var(--font-display);
-  font-size: 0.85rem;
-  letter-spacing: 0.16em;
+  font-size: 0.82rem;
   text-transform: uppercase;
   color: rgba(243, 255, 253, 0.55);
   white-space: nowrap;
@@ -938,7 +1021,6 @@ button {
   top: 0.85rem;
   margin: 0;
   font-size: 0.72rem;
-  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--fg-muted);
   opacity: 0;
@@ -968,8 +1050,6 @@ button {
 .stat-label {
   color: var(--brand);
   font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
   text-transform: uppercase;
 }
 
@@ -993,9 +1073,6 @@ button {
 
 .skills-title {
   font-size: 0.78rem;
-  font-family: var(--font-body);
-  font-weight: 600;
-  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--fg-muted);
   margin: 2rem 0 0.9rem;
@@ -1124,7 +1201,7 @@ button {
 
 .service p {
   color: var(--fg-muted);
-  font-size: 0.95rem;
+  font-size: 1rem;
   line-height: 1.65;
   margin: 0;
 }
@@ -1151,8 +1228,6 @@ button {
   gap: 0.75rem;
   color: var(--fg-muted);
   font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-bottom: 1rem;
 }
@@ -1203,7 +1278,6 @@ button {
 .tags li {
   font-size: 0.78rem;
   font-weight: 500;
-  letter-spacing: 0.04em;
   padding: 0.35rem 0.85rem;
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
@@ -1272,7 +1346,6 @@ button {
   background: var(--dark);
   color: var(--fg-muted);
   font-size: 0.72rem;
-  letter-spacing: 0.04em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1285,7 +1358,17 @@ button {
   background: linear-gradient(135deg, var(--dark-secondary), var(--dark-card));
 }
 
-/* De site op ware grootte, verkleind tot een derde */
+/* Een screenshot van de site. Op een computer komt de echte site eroverheen bij aanwijzen (main.js, initLiveVoorbeelden) */
+.browser-shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* De echte site op ware grootte, verkleind tot een derde. Zichtbaar zodra hij geladen is. */
 .browser-frame {
   position: absolute;
   top: 0;
@@ -1295,14 +1378,50 @@ button {
   border: 0;
   transform: scale(0.3334);
   transform-origin: top left;
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
 }
 
-/* Op touchscreens: klik opent de site, zodat scrollen niet in het voorbeeld blijft hangen */
+.browser-body.is-live .browser-frame {
+  opacity: 1;
+}
+
+/* Over het voorbeeld: op een telefoon opent een tik de site, op een computer laadt een klik de live site hier */
 .browser-overlay {
-  display: none;
   position: absolute;
   inset: 0;
   z-index: 2;
+}
+
+.browser-body.is-bedienbaar .browser-overlay {
+  display: none;
+}
+
+.browser-hint {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 3;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  background: rgba(8, 10, 13, 0.85);
+  border: 1px solid var(--border);
+  color: var(--sage);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.browser-body:hover .browser-hint {
+  opacity: 1;
+}
+
+.browser-body.is-bedienbaar .browser-hint {
+  display: none;
 }
 
 /* Sanctus Fusion: wazige voorvertoning die de lightbox opent */
@@ -1372,7 +1491,6 @@ button {
 
 .sanctus-overlay small {
   font-size: 0.75rem;
-  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(243, 255, 253, 0.75);
 }
@@ -1556,7 +1674,7 @@ button {
 .contact-person p {
   margin: 0;
   color: var(--fg-muted);
-  font-size: 0.92rem;
+  font-size: 1rem;
   line-height: 1.5;
 }
 
@@ -1643,7 +1761,7 @@ button {
   border: 1px solid var(--border);
   background: var(--dark-secondary);
   color: var(--sage);
-  font-size: 0.95rem;
+  font-size: 1rem; /* minimaal 16 px: anders zoomt Safari op een iPhone in bij het typen */
   transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
@@ -1798,7 +1916,6 @@ button {
   margin: -0.5rem 0 0;
   color: var(--fg-muted);
   font-size: 0.8rem;
-  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
@@ -1944,23 +2061,13 @@ html:has(dialog[open]) {
   overflow: hidden;
 }
 
-.process-frame {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 200%;
-  height: 200%;
-  border: 0;
-  transform: scale(0.5);
-  transform-origin: top left;
-}
-
 .process-image {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top;
 }
 
 .process-info {
@@ -2061,9 +2168,7 @@ html:has(dialog[open]) {
 
 .lightbox-count {
   margin-left: 0.5rem;
-  font-family: var(--font-display);
   color: var(--brand);
-  letter-spacing: 0.08em;
 }
 
 .lightbox-nav {
@@ -2351,7 +2456,7 @@ html:has(dialog[open]) {
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
   background: var(--dark-secondary);
-  font-size: 0.88rem;
+  font-size: 1rem; /* minimaal 16 px, zie het contactformulier */
 }
 
 .jellybot-input input:focus {
@@ -2693,22 +2798,6 @@ html:has(dialog[open]) {
   }
 }
 
-@media (max-width: 700px) {
-  /* Op touchscreens: geen scrollen in het voorbeeld, een tik opent de site */
-  .browser-frame {
-    pointer-events: none;
-  }
-
-  .browser-overlay {
-    display: block;
-  }
-
-  .process-frame {
-    width: 250%;
-    height: 250%;
-    transform: scale(0.4);
-  }
-}
 
 @media (max-width: 600px) {
   .hero-text h1 {

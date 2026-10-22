@@ -12,9 +12,11 @@ document.addEventListener('DOMContentLoaded', function () {
   initReveal();
   initMail();
   initContactForm();
+  initLiveVoorbeelden();
   initProcess();
   initLightbox();
   initTransition();
+  initOudeLinks();
   document.querySelectorAll('[data-jaar]').forEach(function (el) { el.textContent = String(new Date().getFullYear()); });
 });
 
@@ -40,10 +42,23 @@ function initMenu() {
   });
 }
 
+/* ---------- OUDE LINKS ----------
+   De 3D-printsectie heette #3dprint (oude site) en #3d-print; nu #printen (een id hoort met een letter te beginnen).
+   Gedeelde links naar de oude adressen komen zo nog steeds goed uit. */
+function initOudeLinks() {
+  const OUD = { '#3dprint': 'printen', '#3d-print': 'printen' };
+  function ga() {
+    const doel = OUD[location.hash] && document.getElementById(OUD[location.hash]);
+    if (doel) doel.scrollIntoView();
+  }
+  ga();
+  window.addEventListener('hashchange', ga);
+}
+
 /* ---------- ACTIEVE SECTIE IN HET MENU ---------- */
 function initActieveSectie() {
   const links = Array.from(document.querySelectorAll('.main-nav a[href^="#"]'));
-  // getElementById: een id als "3d-print" is geen geldige CSS-selector
+  // getElementById: werkt met elke id, ook als die geen geldige CSS-selector zou zijn
   const secties = links.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); }).filter(Boolean);
   if (!secties.length || !('IntersectionObserver' in window)) return;
 
@@ -216,6 +231,37 @@ function escapeHtml(tekst) {
   return String(tekst).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
 }
 
+/* ---------- LIVE VOORBEELDEN VAN DE PROJECTEN ----------
+   In de lijst staan screenshots. Een ingesloten site die bij het laden zelf iets focust (zoals het leeftijdsscherm van
+   Brouwerij Rolduc) laat de pagina anders tijdens het scrollen naar zich toe springen (vooral op een telefoon), en
+   haalt de focus weg uit het contactformulier. "inert" helpt niet: Chrome negeert dat bij sites van een ander domein.
+   Daarom laadt de echte site alleen op een computer en pas na een klik op het voorbeeld; dan staat hij in beeld en
+   wil je hem bedienen. Op een telefoon blijft het bij de screenshot en opent een tik de site. */
+function initLiveVoorbeelden() {
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  document.querySelectorAll('.browser-body[data-live]').forEach(function (vak) {
+    const knop = vak.querySelector('.browser-overlay');
+    knop.setAttribute('aria-label', (vak.dataset.liveTitel || 'Live voorbeeld') + ' hier laden');
+    const hint = document.createElement('p');
+    hint.className = 'browser-hint';
+    hint.setAttribute('aria-hidden', 'true');
+    hint.textContent = 'Klik om de site hier live te bekijken';
+    vak.appendChild(hint);
+
+    knop.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (vak.querySelector('.browser-frame')) return;
+      const frame = document.createElement('iframe');
+      frame.className = 'browser-frame';
+      frame.title = vak.dataset.liveTitel || 'Live voorbeeld';
+      frame.addEventListener('load', function () { vak.classList.add('is-live'); }, { once: true });
+      frame.src = vak.dataset.live;
+      vak.insertBefore(frame, knop);
+      vak.classList.add('is-bedienbaar');
+    });
+  });
+}
+
 /* ---------- DIALOGEN ----------
    Native <dialog>: focus blijft erin, Escape sluit. Klik op de achtergrond sluit ook. */
 function sluitBijAchtergrond(dialog, sluit) {
@@ -229,7 +275,7 @@ function sluitBijAchtergrond(dialog, sluit) {
 const PROCES = {
   rolduc: {
     titel: 'Brouwerij Rolduc',
-    url: 'https://www.brouwerij-rolduc.nl',
+    afbeelding: 'assets/img/project-rolduc-1400.webp',
     urlLabel: 'brouwerij-rolduc.nl',
     team: false,
     tekst: [
@@ -240,7 +286,7 @@ const PROCES = {
   },
   heerlen: {
     titel: 'Heerlen: miljarden kilo’s steenkool',
-    url: 'https://mia-mms-2526.github.io/team03/',
+    afbeelding: 'assets/img/project-heerlen-1400.webp',
     urlLabel: 'Interactieve story',
     team: true,
     tekst: [
@@ -251,7 +297,7 @@ const PROCES = {
   },
   codemonster: {
     titel: 'CodeMonster',
-    url: 'https://mia-dp-2425.github.io/team01/index.html',
+    afbeelding: 'assets/img/project-codemonster-1400.webp',
     urlLabel: 'CodeMonster',
     team: true,
     tekst: [
@@ -276,7 +322,7 @@ const PROCES = {
 function initProcess() {
   const dialog = document.getElementById('process-modal');
   if (!dialog || typeof dialog.showModal !== 'function') return;
-  const frame = dialog.querySelector('.process-frame');
+  // Een screenshot of mockup, geen ingesloten site: die zou de focus uit het venster kunnen trekken
   const plaatje = dialog.querySelector('.process-image');
   const badge = dialog.querySelector('[data-process-badge]');
 
@@ -289,26 +335,12 @@ function initProcess() {
     dialog.querySelector('[data-process-url]').textContent = p.urlLabel;
     dialog.querySelector('[data-process-text]').innerHTML = p.tekst.map(function (t) { return '<p>' + escapeHtml(t) + '</p>'; }).join('');
     dialog.querySelector('[data-process-skills]').innerHTML = p.skills.map(function (s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('');
-    if (p.url) {
-      frame.hidden = false;
-      frame.src = p.url;
-      plaatje.hidden = true;
-    } else {
-      frame.hidden = true;
-      frame.removeAttribute('src');
-      plaatje.src = p.afbeelding;
-      plaatje.alt = p.titel + ': ' + p.urlLabel.toLowerCase();
-      plaatje.hidden = false;
-    }
+    plaatje.src = p.afbeelding;
+    plaatje.alt = p.titel + ': ' + p.urlLabel;
     dialog.showModal();
   }
 
-  function sluit() { dialog.close(); }
-  dialog.addEventListener('close', function () {
-    // Het voorbeeld stoppen, anders blijft de site op de achtergrond draaien
-    setTimeout(function () { if (!dialog.open) frame.removeAttribute('src'); }, 300);
-  });
-  sluitBijAchtergrond(dialog, sluit);
+  sluitBijAchtergrond(dialog, function () { dialog.close(); });
   document.querySelectorAll('[data-process]').forEach(function (knop) {
     knop.addEventListener('click', function () { open(knop.dataset.process); });
   });

@@ -122,8 +122,9 @@ export function initHero(container, anker) {
 		const hoek = (i / AANTAL) * Math.PI * 2 + (Math.random() - 0.5) * 0.35;
 		const ver = Math.random();
 		const straal = 2.05 + ver * 1.3;
+		// Links (richting de tekst) blijft de ring dichter bij het teken, zodat er geen blokjes achter de tekst zweven
 		zweef.push({
-			x: Math.cos(hoek) * straal * 1.1, y: Math.sin(hoek) * straal * 0.8, z: 0.8 - ver * 2.6 - Math.random() * 0.6,
+			x: Math.cos(hoek) * straal * (Math.cos(hoek) < 0 ? 0.82 : 1.1), y: Math.sin(hoek) * straal * 0.8, z: 0.8 - ver * 2.6 - Math.random() * 0.6,
 			fase: Math.random() * Math.PI * 2, tempo: 0.35 + Math.random() * 0.4, draai: (Math.random() - 0.5) * 0.8,
 			grootte: 0.55 + Math.random() * 0.75, rx: Math.random() * Math.PI, ry: Math.random() * Math.PI
 		});
@@ -222,8 +223,9 @@ export function initHero(container, anker) {
 			d.doel.y = uiteen ? u.y : 0;
 			d.doel.z = uiteen ? u.z : til;
 			d.doel.r = uiteen ? u.r : 0;
+			// Kritisch gedempt (demping = 2 * wortel van de stijfheid): vloeiend, zonder na te veren (HUISSTIJL.md)
 			for (const k of ['x', 'y', 'z', 'r']) {
-				const uit = veer(d.pos[k], d.snel[k], d.doel[k], dt, 90, 9);
+				const uit = veer(d.pos[k], d.snel[k], d.doel[k], dt, 90, 19);
 				d.pos[k] = uit[0];
 				d.snel[k] = uit[1];
 			}
