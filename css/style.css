@@ -200,8 +200,6 @@ h4,
 .project-meta,
 .stat-label,
 .skills-title,
-.hero-hint,
-.scan-hint,
 .footer-tagline,
 .marquee-track span,
 .sanctus-overlay small,
@@ -854,38 +852,6 @@ button {
   opacity: 0;
 }
 
-.hero-hint {
-  position: absolute;
-  right: 0.5rem;
-  bottom: 0.25rem;
-  margin: 0;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  color: var(--fg-muted);
-  opacity: 0;
-  transition: opacity 0.6s ease 1.5s;
-  pointer-events: none;
-}
-
-.hero.is-3d .hero-hint {
-  opacity: 0.7;
-}
-
-/* Hints voor muis of vinger */
-.hint-touch {
-  display: none;
-}
-
-@media (hover: none) {
-  .hint-muis {
-    display: none;
-  }
-
-  .hint-touch {
-    display: inline;
-  }
-}
-
 /* Lopende band met disciplines, gescheiden door blokjes in de merkkleuren */
 .marquee {
   position: relative;
@@ -1013,22 +979,6 @@ button {
 
 .no-webgl .scan-photo {
   display: block;
-}
-
-.scan-hint {
-  position: absolute;
-  left: 1rem;
-  top: 0.85rem;
-  margin: 0;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  color: var(--fg-muted);
-  opacity: 0;
-  transition: opacity 0.6s ease 2.5s;
-}
-
-.scan.is-3d .scan-hint {
-  opacity: 0.8;
 }
 
 .stats {
@@ -2746,13 +2696,6 @@ html:has(dialog[open]) {
     justify-self: center;
     max-width: 360px;
     margin: -1.5rem 0 1rem;
-  }
-
-  .hero-hint {
-    right: 50%;
-    bottom: -0.5rem;
-    transform: translateX(50%);
-    white-space: nowrap;
   }
 
   .about,
