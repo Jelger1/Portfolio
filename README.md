@@ -30,8 +30,9 @@ beantwoordt over Jelgers werk, en een contactformulier dat via Supabase loopt.
 
 ## Iets aanpassen
 
-Teksten, projecten en opmaak pas je gewoon aan in `index.html`, `css/style.css` en `js/main.js` (de teksten van
-"Mijn proces" staan in `PROCES`, de beelden van Sanctus Fusion in `BEELDEN`).
+Teksten, projecten en opmaak pas je gewoon aan in `index.html`, `css/style.css` en `js/main.js`. De tekst van
+"Mijn proces" staat per project in `index.html` (een `<template class="proces">` naast de knop), de beelden van
+Sanctus Fusion in `BEELDEN` in `js/main.js`.
 
 Na een wijziging in `src/3d/`, een nieuwe foto of een nieuwe 3D-scan draai je de build:
 
@@ -70,6 +71,22 @@ Bewust geen ingesloten sites die vanzelf laden: Brouwerij Rolduc zet bij het lad
 leeftijdsscherm, en dan springt de pagina tijdens het scrollen naar dat voorbeeld (vooral op een telefoon) en verdwijnt
 de focus uit het contactformulier. Verandert een site, maak dan een nieuwe screenshot van 1440×900, zet hem als JPG in
 `assets/screens/` en draai `npm run build`.
+
+### Een story (of project) toevoegen
+
+De interactieve stories staan in een carrousel (`<article id="stories">` in `index.html`): op een telefoon veeg je
+horizontaal, op een computer gebruik je de pijlen, de blokjes, de pijltjestoetsen of sleep je met de muis. Alles van één
+story staat bij elkaar in één `<li class="story">`, ook de tekst van "Mijn proces". Een story toevoegen:
+
+1. Maak een screenshot van de site (1440×900) en zet hem als `assets/screens/<naam>.jpg`, bijvoorbeeld `wmc.jpg`.
+2. Kopieer in `index.html` een `<li class="story">`-blok en pas aan: de `id` (`project-<naam>`), de links (vier keer
+   dezelfde URL), de afbeeldingen (`assets/img/project-<naam>-700.webp` en `-1400.webp`), de kop, tekst en tags.
+3. Pas in hetzelfde blok de `<template class="proces">` aan: de alinea's, de vaardigheden (`<ul>`), `data-titel`,
+   `data-label` (de adresbalk), `data-afbeelding` en `data-team` (weghalen bij een zelfstandig project).
+4. Draai `npm run build`. De blokjes en pijlen van de carrousel passen zich vanzelf aan het aantal stories aan.
+
+Een gewoon project werkt hetzelfde, met een `<article class="project">` in plaats van een `<li class="story">`; het
+nummer (`project-nr`) zet je zelf, de kleur ervan wisselt vanzelf mee.
 
 ## Contactformulier (Supabase)
 

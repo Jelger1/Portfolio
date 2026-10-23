@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initMail();
   initContactForm();
   initLiveVoorbeelden();
+  initStories();
   initProcess();
   initLightbox();
   initTransition();
@@ -262,6 +263,111 @@ function initLiveVoorbeelden() {
   });
 }
 
+/* ---------- INTERACTIEVE STORIES (carrousel) ----------
+   Een horizontale rij met scroll-snap: op een telefoon veeg je, op een computer sleep je met de muis of gebruik je de
+   pijlen, de blokjes of de pijltjestoetsen. Het aantal stories volgt uit de HTML: voeg een <li class="story"> toe en
+   de blokjes en pijlen passen zich vanzelf aan. */
+function initStories() {
+  document.querySelectorAll('[data-stories]').forEach(function (carrousel) {
+    const track = carrousel.querySelector('.stories-track');
+    const slides = Array.from(track.children);
+    const stippen = carrousel.querySelector('.stories-stippen');
+    const pijlen = Array.from(carrousel.querySelectorAll('[data-stories-stap]'));
+    if (slides.length < 2) {
+      carrousel.classList.add('is-enkel');
+      return;
+    }
+
+    let huidig = 0;
+    const knoppen = slides.map(function (slide, i) {
+      const titel = slide.querySelector('h3');
+      const knop = document.createElement('button');
+      knop.type = 'button';
+      knop.className = 'stories-stip';
+      knop.setAttribute('aria-label', 'Story ' + (i + 1) + ': ' + (titel ? titel.textContent.trim() : ''));
+      knop.addEventListener('click', function () { ga(i); });
+      stippen.appendChild(knop);
+      return knop;
+    });
+
+    function breedte() { return slides[1].offsetLeft - slides[0].offsetLeft || track.clientWidth; }
+
+    function ga(i) {
+      i = Math.max(0, Math.min(slides.length - 1, i));
+      track.scrollTo({ left: slides[i].offsetLeft - slides[0].offsetLeft, behavior: minderBeweging ? 'auto' : 'smooth' });
+    }
+
+    function bijwerken() {
+      huidig = Math.max(0, Math.min(slides.length - 1, Math.round(track.scrollLeft / breedte())));
+      // De story ernaast is gedimd en niet bedienbaar (inert); je komt er met vegen, de pijlen of de blokjes
+      slides.forEach(function (slide, i) {
+        slide.classList.toggle('is-actief', i === huidig);
+        slide.inert = i !== huidig;
+      });
+      knoppen.forEach(function (knop, i) {
+        if (i === huidig) knop.setAttribute('aria-current', 'true');
+        else knop.removeAttribute('aria-current');
+      });
+      pijlen.forEach(function (pijl) {
+        const stap = Number(pijl.dataset.storiesStap);
+        pijl.disabled = (stap < 0 && huidig === 0) || (stap > 0 && huidig === slides.length - 1);
+      });
+    }
+
+    let gepland = false;
+    track.addEventListener('scroll', function () {
+      if (gepland) return;
+      gepland = true;
+      requestAnimationFrame(function () { gepland = false; bijwerken(); });
+    }, { passive: true });
+    pijlen.forEach(function (pijl) {
+      pijl.addEventListener('click', function () { ga(huidig + Number(pijl.dataset.storiesStap)); });
+    });
+    // Tik of klik op de story die ernaast in beeld piept: daarheen
+    track.addEventListener('click', function (e) {
+      if (e.target.closest('.story.is-actief')) return;
+      const i = slides.findIndex(function (slide) {
+        const r = slide.getBoundingClientRect();
+        return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      });
+      if (i >= 0 && i !== huidig) ga(i);
+    });
+    carrousel.addEventListener('keydown', function (e) {
+      if (e.target.closest('input, textarea') || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return;
+      e.preventDefault();
+      ga(huidig + (e.key === 'ArrowRight' ? 1 : -1));
+    });
+
+    // Slepen met de muis, net als vegen op een telefoon. Na het slepen telt het loslaten niet als klik.
+    let sleep = null;
+    track.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      sleep = { x: e.clientX, links: track.scrollLeft, start: huidig, bewogen: false };
+    });
+    track.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    window.addEventListener('pointermove', function (e) {
+      if (!sleep) return;
+      const dx = e.clientX - sleep.x;
+      if (!sleep.bewogen && Math.abs(dx) > 6) { sleep.bewogen = true; track.classList.add('is-slepend'); }
+      if (sleep.bewogen) track.scrollLeft = sleep.links - dx;
+    });
+    window.addEventListener('pointerup', function (e) {
+      if (!sleep) return;
+      const dx = e.clientX - sleep.x;
+      const s = sleep;
+      sleep = null;
+      if (!s.bewogen) return;
+      track.classList.remove('is-slepend');
+      ga(s.start + (dx < -60 ? 1 : dx > 60 ? -1 : 0));
+      function geenKlik(ev) { ev.preventDefault(); ev.stopPropagation(); }
+      track.addEventListener('click', geenKlik, true);
+      setTimeout(function () { track.removeEventListener('click', geenKlik, true); }, 0);
+    });
+
+    bijwerken();
+  });
+}
+
 /* ---------- DIALOGEN ----------
    Native <dialog>: focus blijft erin, Escape sluit. Klik op de achtergrond sluit ook. */
 function sluitBijAchtergrond(dialog, sluit) {
@@ -271,78 +377,38 @@ function sluitBijAchtergrond(dialog, sluit) {
   dialog.querySelectorAll('[data-sluit]').forEach(function (knop) { knop.addEventListener('click', sluit); });
 }
 
-/* ---------- MIJN PROCES ---------- */
-const PROCES = {
-  rolduc: {
-    titel: 'Brouwerij Rolduc',
-    afbeelding: 'assets/img/project-rolduc-1400.webp',
-    urlLabel: 'brouwerij-rolduc.nl',
-    team: false,
-    tekst: [
-      'Dit project heb ik volledig zelfstandig ontworpen en gecodeerd. Vanaf het eerste gesprek met de opdrachtgever heb ik het hele traject doorlopen: van concept tot een werkend eindproduct.',
-      'Gedurende het proces ben ik veel in contact geweest met de opdrachtgever. Niet alleen om te leveren wat hij voor ogen had, maar ook om actief mee te denken over wat er miste, wat beter kon en welke kansen hij misschien over het hoofd zag. Door tools zoals Web3Forms in te zetten, heb ik ervoor gezorgd dat de site niet alleen mooi is, maar ook optimaal functioneert.'
-    ],
-    skills: ['HTML & CSS', 'JavaScript', 'Web3Forms', 'UI Design', 'Klantcontact']
-  },
-  heerlen: {
-    titel: 'Heerlen: miljarden kilo’s steenkool',
-    afbeelding: 'assets/img/project-heerlen-1400.webp',
-    urlLabel: 'Interactieve story',
-    team: true,
-    tekst: [
-      'Dit project heb ik samen met een team gerealiseerd. Naast mijn visuele rol heb ik ook de volledige website geprogrammeerd. Ik heb de visuele stijl ontworpen, meegedacht over de opbouw en structuur van de video, en alles technisch tot leven gebracht in code.',
-      'Daarnaast was ik verantwoordelijk voor het bedenken en schrijven van de content. Het was een fijne samenwerking waarbij iedereen zijn eigen expertise inbracht en we samen tot een sterk eindresultaat kwamen.'
-    ],
-    skills: ['HTML & CSS', 'JavaScript', 'Visual Design', 'Content Writing', 'Video Concept', 'Storytelling']
-  },
-  codemonster: {
-    titel: 'CodeMonster',
-    afbeelding: 'assets/img/project-codemonster-1400.webp',
-    urlLabel: 'CodeMonster',
-    team: true,
-    tekst: [
-      'Binnen dit groepsproject was ik verantwoordelijk voor het volledige design en de front-end development. Ik heb de website ontworpen en gecodeerd, en ervoor gezorgd dat alles goed werkte, inclusief het responsive design.',
-      'Van wireframes tot het uiteindelijke werkende platform: ik zorgde ervoor dat de visuele identiteit en de technische uitvoering naadloos op elkaar aansloten.'
-    ],
-    skills: ['UI Design', 'HTML & CSS', 'JavaScript', 'Responsive Design']
-  },
-  sanctus: {
-    titel: 'Sanctus Fusion',
-    afbeelding: 'assets/img/sanctus-biertap-v2-1200.webp',
-    urlLabel: 'Biertap-mockup',
-    team: false,
-    tekst: [
-      'Bij dit project heb ik veel creatieve vrijheid gekregen, maar ik heb vooral in het begin regelmatig afgestemd met de opdrachtgever om te zorgen dat de richting klopte. Die basis gaf me vertrouwen om het concept verder uit te werken.',
-      'Ik heb veel in Illustrator en Photoshop gewerkt. Toen het bier nog niet gebrouwen was, ben ik onderzoek gaan doen naar de smaakprofielen van de hopsoorten die in het bier verwerkt zouden worden. Dat vormde de basis voor mijn ontwerp. Daarnaast heb ik goed gekeken naar hoe andere merken hun IPA-bieren visueel positioneren en heb ik de huisstijl van Brouwerij Rolduc en Dé Wieëtsjaf gecombineerd tot een eigen, herkenbare stijl.'
-    ],
-    skills: ['Illustrator', 'Photoshop', 'InDesign', 'Branding', 'Onderzoek']
-  }
-};
-
+/* ---------- MIJN PROCES ----------
+   De tekst staat per project in de HTML, in een <template class="proces"> naast de knop: zo staat alles van één project
+   bij elkaar. data-titel, data-label (adresbalk), data-afbeelding en data-team (groepsproject) vullen de rest in. */
 function initProcess() {
   const dialog = document.getElementById('process-modal');
   if (!dialog || typeof dialog.showModal !== 'function') return;
   // Een screenshot of mockup, geen ingesloten site: die zou de focus uit het venster kunnen trekken
   const plaatje = dialog.querySelector('.process-image');
   const badge = dialog.querySelector('[data-process-badge]');
+  const tekst = dialog.querySelector('[data-process-text]');
+  const skills = dialog.querySelector('[data-process-skills]');
 
-  function open(sleutel) {
-    const p = PROCES[sleutel];
-    if (!p) return;
-    badge.className = 'process-badge' + (p.team ? ' is-team' : '');
-    badge.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-' + (p.team ? 'team' : 'solo') + '"/></svg>' + (p.team ? 'Groepsproject' : 'Zelfstandig project');
-    dialog.querySelector('#process-title').textContent = p.titel;
-    dialog.querySelector('[data-process-url]').textContent = p.urlLabel;
-    dialog.querySelector('[data-process-text]').innerHTML = p.tekst.map(function (t) { return '<p>' + escapeHtml(t) + '</p>'; }).join('');
-    dialog.querySelector('[data-process-skills]').innerHTML = p.skills.map(function (s) { return '<li>' + escapeHtml(s) + '</li>'; }).join('');
-    plaatje.src = p.afbeelding;
-    plaatje.alt = p.titel + ': ' + p.urlLabel;
+  function open(template) {
+    const d = template.dataset;
+    const team = 'team' in d;
+    const inhoud = template.content.cloneNode(true);
+    badge.className = 'process-badge' + (team ? ' is-team' : '');
+    badge.innerHTML = '<svg class="icon" aria-hidden="true"><use href="#i-' + (team ? 'team' : 'solo') + '"/></svg>' + (team ? 'Groepsproject' : 'Zelfstandig project');
+    dialog.querySelector('#process-title').textContent = d.titel;
+    dialog.querySelector('[data-process-url]').textContent = d.label;
+    skills.replaceChildren.apply(skills, Array.from(inhoud.querySelectorAll('li')));
+    inhoud.querySelectorAll('ul').forEach(function (lijst) { lijst.remove(); });
+    tekst.replaceChildren(inhoud);
+    plaatje.src = d.afbeelding;
+    plaatje.alt = d.titel + ': ' + d.label;
     dialog.showModal();
   }
 
   sluitBijAchtergrond(dialog, function () { dialog.close(); });
   document.querySelectorAll('[data-process]').forEach(function (knop) {
-    knop.addEventListener('click', function () { open(knop.dataset.process); });
+    const template = knop.closest('.project').querySelector('template.proces');
+    if (template) knop.addEventListener('click', function () { open(template); });
   });
 }
 

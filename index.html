@@ -44,11 +44,11 @@
   </script>
   <link rel="preload" href="assets/fonts/saira-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/style.css?v=8378e295">
+  <link rel="stylesheet" href="css/style.css?v=85ac8b08">
   <script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/*"},"eagerness":"moderate"}]}</script>
 
   <script type="module" src="js/3d.js?v=a5893dd9"></script>
-  <script src="js/main.js?v=fe27086d" defer></script>
+  <script src="js/main.js?v=91f13a06" defer></script>
   <script src="js/chatbot.js?v=e6885d8d" defer></script>
 
   <script type="application/ld+json">
@@ -253,7 +253,7 @@
         <header class="section-head reveal">
           <p class="kicker">Projecten</p>
           <h2 id="projecten-title">Werk waar ik <span class="highlight">trots</span> op ben</h2>
-          <p class="section-intro">Van een webshop met reserveringssysteem tot een interactieve geschiedenisles en de complete identiteit van een bier.</p>
+          <p class="section-intro">Van een webshop met reserveringssysteem tot interactieve stories over de Limburgse geschiedenis en de complete identiteit van een bier.</p>
         </header>
 
         <article class="project" id="project-rolduc" aria-labelledby="rolduc-title">
@@ -274,52 +274,112 @@
             <ul class="tags"><li>Website</li><li>Webshop</li><li>UI Design</li></ul>
             <p class="project-actions">
               <a href="https://www.brouwerij-rolduc.nl" class="btn primary" target="_blank" rel="noopener noreferrer">Bekijk project <svg class="icon" aria-hidden="true"><use href="#i-extern"/></svg></a>
-              <button type="button" class="btn outline" data-process="rolduc">Mijn proces <svg class="icon" aria-hidden="true"><use href="#i-pijl"/></svg></button>
+              <button type="button" class="btn outline" data-process>Mijn proces <svg class="icon" aria-hidden="true"><use href="#i-pijl"/></svg></button>
             </p>
+            <!-- "Mijn proces": de tekst en vaardigheden voor het venster (data-team voor een groepsproject) -->
+            <template class="proces" data-titel="Brouwerij Rolduc" data-label="brouwerij-rolduc.nl" data-afbeelding="assets/img/project-rolduc-1400.webp">
+              <p>Dit project heb ik volledig zelfstandig ontworpen en gecodeerd. Vanaf het eerste gesprek met de opdrachtgever heb ik het hele traject doorlopen: van concept tot een werkend eindproduct.</p>
+              <p>Gedurende het proces ben ik veel in contact geweest met de opdrachtgever. Niet alleen om te leveren wat hij voor ogen had, maar ook om actief mee te denken over wat er miste, wat beter kon en welke kansen hij misschien over het hoofd zag. Door tools zoals Web3Forms in te zetten, heb ik ervoor gezorgd dat de site niet alleen mooi is, maar ook optimaal functioneert.</p>
+              <ul><li>HTML &amp; CSS</li><li>JavaScript</li><li>Web3Forms</li><li>UI Design</li><li>Klantcontact</li></ul>
+            </template>
           </div>
         </article>
 
-        <article class="project project-flip" id="project-heerlen" aria-labelledby="heerlen-title">
-          <div class="project-visual reveal">
-            <div class="browser">
-              <div class="browser-bar" aria-hidden="true"><span class="browser-dots"><span></span><span></span><span></span></span><span class="browser-url">Interactieve story</span></div>
-              <div class="browser-body" data-live="https://mia-mms-2526.github.io/team03/" data-live-titel="Live voorbeeld van de interactieve story over Heerlen">
-                <img class="browser-shot" src="assets/img/project-heerlen-700.webp" srcset="assets/img/project-heerlen-700.webp 700w, assets/img/project-heerlen-1400.webp 1400w" sizes="(max-width: 900px) 92vw, 700px" alt="Het startscherm van de interactieve story over Heerlen" width="1400" height="875" loading="lazy" decoding="async">
-                <a href="https://mia-mms-2526.github.io/team03/" class="browser-overlay" target="_blank" rel="noopener noreferrer" aria-label="Bekijk de interactieve story over Heerlen (nieuw venster)"></a>
-              </div>
+        <!-- ========== INTERACTIEVE STORIES ==========
+             Een carrousel: op een telefoon horizontaal vegen, op een computer de pijlen of de blokjes (js/main.js, initStories).
+             Een story toevoegen: kopieer een <li class="story"> en pas teksten, links en de "Mijn proces"-template aan,
+             zet een screenshot (1440x900) als assets/screens/<naam>.jpg en draai npm run build. Zie README.md. -->
+        <article class="project-stories reveal" id="stories" aria-labelledby="stories-title" data-stories>
+          <header class="stories-head">
+            <p class="project-meta"><span class="project-nr" aria-hidden="true">02</span> <span id="stories-title">Interactieve stories</span></p>
+            <div class="stories-nav">
+              <button type="button" class="stories-pijl" data-stories-stap="-1" aria-label="Vorige story"><svg class="icon" aria-hidden="true"><use href="#i-links"/></svg></button>
+              <div class="stories-stippen" role="group" aria-label="Kies een story"></div>
+              <button type="button" class="stories-pijl" data-stories-stap="1" aria-label="Volgende story"><svg class="icon" aria-hidden="true"><use href="#i-rechts"/></svg></button>
             </div>
-          </div>
-          <div class="project-text reveal">
-            <p class="project-meta"><span class="project-nr" aria-hidden="true">02</span> Interactief · Storytelling</p>
-            <h3 id="heerlen-title">Heerlen: miljarden kilo's <span class="highlight">steenkool</span></h3>
-            <p>Wat deden miljarden kilo's steenkool met Heerlen? Een diepe duik in de geschiedenis van de stad: van de tijd vóór de ontdekking tot de periode na de mijnsluiting. Een interactieve ervaring op basis van historische data.</p>
-            <ul class="tags"><li>Interactief</li><li>Full Stack</li><li>Storytelling</li></ul>
-            <p class="project-actions">
-              <a href="https://mia-mms-2526.github.io/team03/" class="btn primary" target="_blank" rel="noopener noreferrer">Bekijk project <svg class="icon" aria-hidden="true"><use href="#i-extern"/></svg></a>
-              <button type="button" class="btn outline" data-process="heerlen">Mijn proces <svg class="icon" aria-hidden="true"><use href="#i-pijl"/></svg></button>
-            </p>
-          </div>
+          </header>
+
+          <ul class="stories-track">
+            <li class="story project project-flip" id="project-heerlen" aria-labelledby="heerlen-title">
+              <div class="project-visual">
+                <div class="browser">
+                  <div class="browser-bar" aria-hidden="true"><span class="browser-dots"><span></span><span></span><span></span></span><span class="browser-url">Mijntijd Heerlen</span></div>
+                  <div class="browser-body" data-live="https://jelger1.github.io/Mijntijd-Heerlen/" data-live-titel="Live voorbeeld van de interactieve story over Heerlen">
+                    <img class="browser-shot" src="assets/img/project-heerlen-700.webp" srcset="assets/img/project-heerlen-700.webp 700w, assets/img/project-heerlen-1400.webp 1400w" sizes="(max-width: 900px) 88vw, 700px" alt="Het startscherm van de interactieve story over Heerlen" width="1400" height="875" loading="lazy" decoding="async">
+                    <a href="https://jelger1.github.io/Mijntijd-Heerlen/" class="browser-overlay" target="_blank" rel="noopener noreferrer" aria-label="Bekijk de interactieve story over Heerlen (nieuw venster)"></a>
+                  </div>
+                </div>
+              </div>
+              <div class="project-text">
+                <p class="project-meta">Interactief · Storytelling</p>
+                <h3 id="heerlen-title">Heerlen: miljarden kilo's <span class="highlight">steenkool</span></h3>
+                <p>Wat deden miljarden kilo's steenkool met Heerlen? Een diepe duik in de geschiedenis van de stad: van de tijd vóór de ontdekking tot de periode na de mijnsluiting. Een interactieve ervaring op basis van historische data.</p>
+                <ul class="tags"><li>Interactief</li><li>Full Stack</li><li>Storytelling</li></ul>
+                <p class="project-actions">
+                  <a href="https://jelger1.github.io/Mijntijd-Heerlen/" class="btn primary" target="_blank" rel="noopener noreferrer">Bekijk project <svg class="icon" aria-hidden="true"><use href="#i-extern"/></svg></a>
+                  <button type="button" class="btn outline" data-process>Mijn proces <svg class="icon" aria-hidden="true"><use href="#i-pijl"/></svg></button>
+                </p>
+                <template class="proces" data-titel="Heerlen: miljarden kilo’s steenkool" data-label="Mijntijd Heerlen" data-afbeelding="assets/img/project-heerlen-1400.webp" data-team>
+                  <p>Dit project heb ik samen met een team gerealiseerd. Naast mijn visuele rol heb ik ook de volledige website geprogrammeerd. Ik heb de visuele stijl ontworpen, meegedacht over de opbouw en structuur van de video, en alles technisch tot leven gebracht in code.</p>
+                  <p>Daarnaast was ik verantwoordelijk voor het bedenken en schrijven van de content. Het was een fijne samenwerking waarbij iedereen zijn eigen expertise inbracht en we samen tot een sterk eindresultaat kwamen.</p>
+                  <ul><li>HTML &amp; CSS</li><li>JavaScript</li><li>Visual Design</li><li>Content Writing</li><li>Video Concept</li><li>Storytelling</li></ul>
+                </template>
+              </div>
+            </li>
+
+            <li class="story project project-flip" id="project-wmc" aria-labelledby="wmc-title">
+              <div class="project-visual">
+                <div class="browser">
+                  <div class="browser-bar" aria-hidden="true"><span class="browser-dots"><span></span><span></span><span></span></span><span class="browser-url">de-wmc-story.nl</span></div>
+                  <div class="browser-body" data-live="https://de-wmc-story.nl/" data-live-titel="Live voorbeeld van Klankstad, de interactieve story over het WMC">
+                    <img class="browser-shot" src="assets/img/project-wmc-700.webp" srcset="assets/img/project-wmc-700.webp 700w, assets/img/project-wmc-1400.webp 1400w" sizes="(max-width: 900px) 88vw, 700px" alt="De titelpagina van Klankstad, het interactieve verhaal over het Wereld Muziek Concours in 1951" width="1400" height="875" loading="lazy" decoding="async">
+                    <a href="https://de-wmc-story.nl/" class="browser-overlay" target="_blank" rel="noopener noreferrer" aria-label="Bekijk Klankstad, de interactieve story over het WMC (nieuw venster)"></a>
+                  </div>
+                </div>
+              </div>
+              <div class="project-text">
+                <p class="project-meta">Interactief · Keuzeverhaal</p>
+                <h3 id="wmc-title">Klankstad: WMC Kerkrade <span class="highlight">1951</span></h3>
+                <p>Kerkrade, augustus 1951: vierduizend muzikanten komen naar een mijnstad die grijs ziet van het kolenstof, en er zijn niet genoeg bedden. Je speelt als Zef, oud-mijnwerker en ritselaar, en jouw keuzes bepalen hoe het allereerste Wereld Muziek Concours verloopt. Met vier eindes, een voorleesfunctie en de klanken van 1951.</p>
+                <ul class="tags"><li>Interactief</li><li>Storytelling</li><li>Onderzoek</li><li>NL / EN</li></ul>
+                <p class="project-actions">
+                  <a href="https://de-wmc-story.nl/" class="btn primary" target="_blank" rel="noopener noreferrer">Bekijk project <svg class="icon" aria-hidden="true"><use href="#i-extern"/></svg></a>
+                  <button type="button" class="btn outline" data-process>Mijn proces <svg class="icon" aria-hidden="true"><use href="#i-pijl"/></svg></button>
+                </p>
+                <template class="proces" data-titel="Klankstad: WMC Kerkrade 1951" data-label="de-wmc-story.nl" data-afbeelding="assets/img/project-wmc-1400.webp">
+                  <p>Voor Klankstad ben ik begonnen met onderzoek naar het Wereld Muziek Concours: hoe het in 1951 ontstond uit de muziekverenigingen van de Mijnstreek, en hoe die traditie doorloopt tot de editie van 2026. Uit dat onderzoek heb ik een verhaal geschreven waarin je als Zef, een oud-mijnwerker, het allereerste concours mogelijk moet maken.</p>
+                  <p>Het verhaal vertakt: je keuzes tellen mee in twee verborgen meters, stadstrots en openheid, en bepalen welk van de vier eindes je krijgt. Ik heb het mobile-first en tweetalig (Nederlands en Engels) gebouwd, met een voorleesfunctie en geluiden per scène, van de wekker om kwart voor vijf tot het applaus op de Markt. De vormgeving is gebaseerd op de styleguide van het WMC 2026.</p>
+                  <ul><li>Onderzoek</li><li>Storytelling</li><li>Interactieontwerp</li><li>HTML &amp; CSS</li><li>JavaScript</li><li>Audio</li></ul>
+                </template>
+              </div>
+            </li>
+          </ul>
         </article>
 
         <article class="project" id="project-codemonster" aria-labelledby="codemonster-title">
           <div class="project-visual reveal">
             <div class="browser">
               <div class="browser-bar" aria-hidden="true"><span class="browser-dots"><span></span><span></span><span></span></span><span class="browser-url">CodeMonster</span></div>
-              <div class="browser-body" data-live="https://mia-dp-2425.github.io/team01/index.html" data-live-titel="Live voorbeeld van het CodeMonster-platform">
-                <img class="browser-shot" src="assets/img/project-codemonster-700.webp" srcset="assets/img/project-codemonster-700.webp 700w, assets/img/project-codemonster-1400.webp 1400w" sizes="(max-width: 900px) 92vw, 700px" alt="De homepage van het CodeMonster-platform" width="1400" height="875" loading="lazy" decoding="async">
-                <a href="https://mia-dp-2425.github.io/team01/index.html" class="browser-overlay" target="_blank" rel="noopener noreferrer" aria-label="Bekijk het CodeMonster-platform (nieuw venster)"></a>
+              <div class="browser-body" data-live="https://jelger1.github.io/CodeMonster/" data-live-titel="Live voorbeeld van de CodeMonster-website">
+                <img class="browser-shot" src="assets/img/project-codemonster-700.webp" srcset="assets/img/project-codemonster-700.webp 700w, assets/img/project-codemonster-1400.webp 1400w" sizes="(max-width: 900px) 92vw, 700px" alt="De homepage van CodeMonster met de kop Word een monster in coderen" width="1400" height="875" loading="lazy" decoding="async">
+                <a href="https://jelger1.github.io/CodeMonster/" class="browser-overlay" target="_blank" rel="noopener noreferrer" aria-label="Bekijk de CodeMonster-website (nieuw venster)"></a>
               </div>
             </div>
           </div>
           <div class="project-text reveal">
-            <p class="project-meta"><span class="project-nr" aria-hidden="true">03</span> Educatie · Platform</p>
+            <p class="project-meta"><span class="project-nr" aria-hidden="true">03</span> Educatie · Workshops</p>
             <h3 id="codemonster-title">CodeMonster</h3>
-            <p>Een doelgericht workshopconcept waarbij kinderen leren programmeren door kunst te maken. Van visual design tot een platform en cursusmodel dat uitvoerig is getest met de doelgroep.</p>
-            <ul class="tags"><li>p5.js</li><li>Educatie</li><li>Workshop</li></ul>
+            <p>Interactieve programmeerworkshops op scholen, voor leerlingen van 8 tot 18 jaar: van creative coding en JavaScript tot Python, games en robotica. Van visual design tot de website en een cursusmodel dat uitvoerig is getest met de doelgroep.</p>
+            <ul class="tags"><li>Educatie</li><li>Workshops</li><li>Creative coding</li></ul>
             <p class="project-actions">
-              <a href="https://mia-dp-2425.github.io/team01/index.html" class="btn primary" target="_blank" rel="noopener noreferrer">Bekijk project <svg class="icon" aria-hidden="true"><use href="#i-extern"/></svg></a>
-              <button type="button" class="btn outline" data-process="codemonster">Mijn proces <svg class="icon" aria-hidden="true"><use href="#i-pijl"/></svg></button>
+              <a href="https://jelger1.github.io/CodeMonster/" class="btn primary" target="_blank" rel="noopener noreferrer">Bekijk project <svg class="icon" aria-hidden="true"><use href="#i-extern"/></svg></a>
+              <button type="button" class="btn outline" data-process>Mijn proces <svg class="icon" aria-hidden="true"><use href="#i-pijl"/></svg></button>
             </p>
+            <template class="proces" data-titel="CodeMonster" data-label="CodeMonster" data-afbeelding="assets/img/project-codemonster-1400.webp" data-team>
+              <p>Binnen dit groepsproject was ik verantwoordelijk voor het volledige design en de front-end development. Ik heb de website ontworpen en gecodeerd, en ervoor gezorgd dat alles goed werkte, inclusief het responsive design.</p>
+              <p>Van wireframes tot het uiteindelijke werkende platform: ik zorgde ervoor dat de visuele identiteit en de technische uitvoering naadloos op elkaar aansloten.</p>
+              <ul><li>UI Design</li><li>HTML &amp; CSS</li><li>JavaScript</li><li>Responsive Design</li></ul>
+            </template>
           </div>
         </article>
 
@@ -341,8 +401,13 @@
             <ul class="tags"><li>Branding</li><li>Visual Design</li><li>Mockups</li><li>Photoshop</li><li>Illustrator</li><li>InDesign</li></ul>
             <p class="project-actions">
               <button type="button" class="btn primary" data-lightbox="0">Bekijk de ontwerpen <svg class="icon" aria-hidden="true"><use href="#i-zoom"/></svg></button>
-              <button type="button" class="btn outline" data-process="sanctus">Mijn proces <svg class="icon" aria-hidden="true"><use href="#i-pijl"/></svg></button>
+              <button type="button" class="btn outline" data-process>Mijn proces <svg class="icon" aria-hidden="true"><use href="#i-pijl"/></svg></button>
             </p>
+            <template class="proces" data-titel="Sanctus Fusion" data-label="Biertap-mockup" data-afbeelding="assets/img/sanctus-biertap-v2-1200.webp">
+              <p>Bij dit project heb ik veel creatieve vrijheid gekregen, maar ik heb vooral in het begin regelmatig afgestemd met de opdrachtgever om te zorgen dat de richting klopte. Die basis gaf me vertrouwen om het concept verder uit te werken.</p>
+              <p>Ik heb veel in Illustrator en Photoshop gewerkt. Toen het bier nog niet gebrouwen was, ben ik onderzoek gaan doen naar de smaakprofielen van de hopsoorten die in het bier verwerkt zouden worden. Dat vormde de basis voor mijn ontwerp. Daarnaast heb ik goed gekeken naar hoe andere merken hun IPA-bieren visueel positioneren en heb ik de huisstijl van Brouwerij Rolduc en Dé Wieëtsjaf gecombineerd tot een eigen, herkenbare stijl.</p>
+              <ul><li>Illustrator</li><li>Photoshop</li><li>InDesign</li><li>Branding</li><li>Onderzoek</li></ul>
+            </template>
           </div>
         </article>
       </div>

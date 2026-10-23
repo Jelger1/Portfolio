@@ -4,7 +4,8 @@
 //
 //  1. js/3d.js           de 3D-scènes (src/3d/) met Three.js gebundeld: alleen de delen die gebruikt worden
 //  2. assets/3d/scan.bin de posities uit assets/Jelgerin3d.glb, genormaliseerd en als 16-bits getallen (10x kleiner)
-//  3. assets/img/*.webp  kleine WebP-versies van de grote foto's (alleen opnieuw als het origineel nieuwer is)
+//  3. assets/img/*.webp  kleine WebP-versies van de grote foto's en van de screenshots in assets/screens/ (alleen
+//                        opnieuw als het origineel nieuwer is)
 //  4. privacy.html, 404.html: het paginadoek komt uit index.html, zodat het maar op één plek staat
 //  5. ?v=...             in de HTML: een vingerafdruk van elk CSS- en JS-bestand, zodat bezoekers nooit een oude versie zien
 import fs from 'node:fs';
@@ -27,12 +28,18 @@ const FOTOS = [
 	{ bron: 'Sanctus-Fusion-Merchandise-T-Shirt.jpg', naam: 'sanctus-shirt-wit', breedtes: [1600] },
 	{ bron: 'Sanctus-Fusion-Merchandise-T-Shirt-Zwart.jpg', naam: 'sanctus-shirt-zwart', breedtes: [1600] },
 	{ bron: 'Jelger-Pic.jpg', naam: 'jelger', breedtes: [160, 800], vierkant: true },
-	// Screenshots van de projectsites (1440x900) voor de voorbeelden in de lijst; vervang de JPG als een site verandert
-	{ bron: 'screens/rolduc.jpg', naam: 'project-rolduc', breedtes: [700, 1400] },
-	{ bron: 'screens/heerlen.jpg', naam: 'project-heerlen', breedtes: [700, 1400] },
-	{ bron: 'screens/codemonster.jpg', naam: 'project-codemonster', breedtes: [700, 1400] },
 	{ bron: 'Jelly-Bot.png', naam: 'jelly-bot', breedtes: [96], vierkant: true }
 ];
+
+// Screenshots van projectsites: elke assets/screens/<naam>.jpg (1440x900) wordt assets/img/project-<naam>-700/-1400.webp.
+// Een nieuw project of een nieuwe story heeft dus alleen een screenshot nodig; vervang de JPG als een site verandert.
+function screenshots() {
+	const map = p('assets/screens');
+	if (!fs.existsSync(map)) return [];
+	return fs.readdirSync(map).filter((f) => /\.(jpe?g|png)$/i.test(f)).map((f) => ({
+		bron: 'screens/' + f, naam: 'project-' + f.replace(/\.[^.]+$/, ''), breedtes: [700, 1400]
+	}));
+}
 
 function nieuwer(bron, doel) {
 	return !fs.existsSync(doel) || fs.statSync(bron).mtimeMs > fs.statSync(doel).mtimeMs;
@@ -100,7 +107,7 @@ function scan() {
 // ---------------------------------------------------------------------------------------------- 3. foto's
 async function fotos() {
 	fs.mkdirSync(p('assets/img'), { recursive: true });
-	for (const foto of FOTOS) {
+	for (const foto of FOTOS.concat(screenshots())) {
 		const bron = p('assets', foto.bron);
 		for (const breedte of foto.breedtes) {
 			const doel = p('assets/img', foto.naam + '-' + breedte + '.webp');
